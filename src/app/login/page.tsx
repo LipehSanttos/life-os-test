@@ -36,7 +36,7 @@ function LoginForm() {
         throw new Error(data.error || "Falha na autenticação.");
       }
 
-      toast.success(`Bem-vindo, ${data.user?.name || "Eduardo Felipe"}! 👋`);
+      toast.success(`Bem-vindo, ${data.user?.name || "ao Life OS"}! 👋`);
       router.push(from);
       router.refresh();
     } catch (err: any) {
@@ -128,7 +128,7 @@ function LoginForm() {
 
       {/* Footer */}
       <div className="text-center mt-6 text-xs text-muted-foreground font-medium">
-        Life OS • Eduardo Felipe © 2026
+        Life OS © 2026
       </div>
     </div>
   );

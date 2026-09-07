@@ -6,7 +6,7 @@
 -- 1. Criação das Tabelas (se não existirem)
 CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL DEFAULT 'Eduardo Felipe',
+    "name" TEXT NOT NULL DEFAULT '',
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
     "avatarUrl" TEXT,
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS "User" (
 );
 
 CREATE TABLE IF NOT EXISTS "UserSettings" (
-    "id" TEXT NOT NULL DEFAULT 'user_default',
-    "name" TEXT NOT NULL DEFAULT 'Eduardo Felipe',
-    "email" TEXT NOT NULL DEFAULT 'eduardo.felipe@lifeos.com',
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL DEFAULT '',
+    "email" TEXT NOT NULL DEFAULT '',
     "theme" TEXT NOT NULL DEFAULT 'dark',
     "autoConfirmAiActions" BOOLEAN NOT NULL DEFAULT false,
     "notificationsEnabled" BOOLEAN NOT NULL DEFAULT true,

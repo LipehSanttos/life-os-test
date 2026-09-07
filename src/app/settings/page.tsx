@@ -8,8 +8,8 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
   // Profile & System settings state
-  const [name, setName] = useState("Eduardo Felipe");
-  const [email, setEmail] = useState("eduardo.felipe@lifeos.com");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [autoConfirmAiActions, setAutoConfirmAiActions] = useState(false);
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const [groqApiKey, setGroqApiKey] = useState("");
@@ -31,8 +31,8 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data) {
-          setName(data.name || "Eduardo Felipe");
-          setEmail(data.email || "eduardo.felipe@lifeos.com");
+          setName(data.name || "");
+          setEmail(data.email || "");
           setAutoConfirmAiActions(Boolean(data.autoConfirmAiActions));
           setGeminiApiKey(data.geminiApiKey || "");
           setGroqApiKey(data.groqApiKey || "");

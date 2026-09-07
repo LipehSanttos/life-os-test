@@ -3,6 +3,68 @@ import { prisma } from "@/lib/db";
 import { verifyPassword, createToken, AUTH_COOKIE_NAME, isValidUsernameOrEmail, hashPassword } from "@/lib/auth";
 import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
 
+// Estrutura de Rate Limiting em memória (janela deslizante)
+interface RateLimitRecord {
+  attempts: number;
+  firstAttempt: number;
+  blockedUntil?: number;
+}
+
+const loginAttempts = new Map<string, RateLimitRecord>();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 60 * 1000; // 1 minuto
+const BLOCK_DURATION_MS = 5 * 60 * 1000; // 5 minutos de bloqueio temporário após estourar
+
+function getClientIdentifier(req: NextRequest, login: string): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "127.0.0.1";
+  return `${ip}:${login.toLowerCase().trim()}`;
+}
+
+function checkRateLimit(identifier: string): { allowed: boolean; waitSeconds?: number } {
+  const now = Date.now();
+  const record = loginAttempts.get(identifier);
+
+  if (!record) return { allowed: true };
+
+  if (record.blockedUntil && now < record.blockedUntil) {
+    const remainingSeconds = Math.ceil((record.blockedUntil - now) / 1000);
+    return { allowed: false, waitSeconds: remainingSeconds };
+  }
+
+  // Reseta janela se expirou
+  if (now - record.firstAttempt > WINDOW_MS && (!record.blockedUntil || now >= record.blockedUntil)) {
+    loginAttempts.delete(identifier);
+    return { allowed: true };
+  }
+
+  if (record.attempts >= MAX_ATTEMPTS) {
+    record.blockedUntil = now + BLOCK_DURATION_MS;
+    const remainingSeconds = Math.ceil(BLOCK_DURATION_MS / 1000);
+    return { allowed: false, waitSeconds: remainingSeconds };
+  }
+
+  return { allowed: true };
+}
+
+function recordFailedAttempt(identifier: string) {
+  const now = Date.now();
+  const record = loginAttempts.get(identifier);
+
+  if (!record || now - record.firstAttempt > WINDOW_MS) {
+    loginAttempts.set(identifier, { attempts: 1, firstAttempt: now });
+  } else {
+    record.attempts += 1;
+    if (record.attempts >= MAX_ATTEMPTS) {
+      record.blockedUntil = now + BLOCK_DURATION_MS;
+    }
+  }
+}
+
+function resetAttempts(identifier: string) {
+  loginAttempts.delete(identifier);
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -12,6 +74,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Por favor, informe seu usuário/e-mail e a senha." },
         { status: 400 }
+      );
+    }
+
+    const identifier = getClientIdentifier(req, login);
+    const rateLimit = checkRateLimit(identifier);
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: `Muitas tentativas incorretas. Por segurança, tente novamente em ${rateLimit.waitSeconds} segundos.`,
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.waitSeconds || 60) },
+        }
       );
     }
 
@@ -91,6 +168,7 @@ export async function POST(req: NextRequest) {
             maxAge: 60 * 60 * 24 * 7, // 7 dias
           });
 
+          resetAttempts(identifier);
           return response;
         } else if (sbError) {
           console.warn("[auth/login] Supabase Auth aviso:", sbError.message);
@@ -104,6 +182,7 @@ export async function POST(req: NextRequest) {
     if (existingUser) {
       const isValid = verifyPassword(password, existingUser.passwordHash);
       if (isValid) {
+        resetAttempts(identifier);
         const token = createToken({
           id: existingUser.id,
           email: existingUser.email,
@@ -129,6 +208,8 @@ export async function POST(req: NextRequest) {
         return response;
       }
     }
+
+    recordFailedAttempt(identifier);
 
     return NextResponse.json(
       { error: "Credenciais inválidas. Verifique seu e-mail/usuário e senha digitados." },

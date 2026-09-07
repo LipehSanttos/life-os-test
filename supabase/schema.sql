@@ -8,7 +8,7 @@
 -- 1. Criação das Tabelas
 CREATE TABLE IF NOT EXISTS public."User" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL DEFAULT 'Eduardo Felipe',
+    "name" TEXT NOT NULL DEFAULT '',
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL DEFAULT 'managed_by_supabase_auth',
     "avatarUrl" TEXT,
@@ -19,9 +19,9 @@ CREATE TABLE IF NOT EXISTS public."User" (
 );
 
 CREATE TABLE IF NOT EXISTS public."UserSettings" (
-    "id" TEXT NOT NULL DEFAULT 'user_default',
-    "name" TEXT NOT NULL DEFAULT 'Eduardo Felipe',
-    "email" TEXT NOT NULL DEFAULT 'eduardo.felipe@lifeos.com',
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL DEFAULT '',
+    "email" TEXT NOT NULL DEFAULT '',
     "theme" TEXT NOT NULL DEFAULT 'dark',
     "autoConfirmAiActions" BOOLEAN NOT NULL DEFAULT false,
     "notificationsEnabled" BOOLEAN NOT NULL DEFAULT true,

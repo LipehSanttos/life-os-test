@@ -10,8 +10,14 @@ let lastUsedUrl: string | null = null;
 let lastUsedKey: string | null = null;
 
 export function getSupabaseClient(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vbenjekbrfompfmjvjqf.supabase.co";
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    throw new Error(
+      "[Supabase Config Error] As variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY são obrigatórias."
+    );
+  }
 
   if (!cachedClient || lastUsedUrl !== url || lastUsedKey !== anonKey) {
     cachedClient = createClient(url, anonKey, {

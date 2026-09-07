@@ -93,7 +93,7 @@ export default function DashboardPage() {
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Hero Greeting Briefing */}
       <DailyGreeting
-        userName={userName || "Eduardo Felipe"}
+        userName={userName || "Usuário"}
         todayCount={stats.todayCount}
         highCount={stats.highCount}
         overdueCount={stats.overdueCount}

@@ -10,22 +10,34 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     const { id } = await params;
+    const existing = await prisma.category.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Categoria não encontrada." }, { status: 404 });
+    }
+
+    if (existing.isSystem && user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Apenas administradores podem modificar categorias padrão do sistema." },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { name, color, icon, sortOrder } = body;
 
     const updated = await prisma.category.update({
       where: { id },
       data: {
-        name: name !== undefined ? name : undefined,
-        color: color !== undefined ? color : undefined,
-        icon: icon !== undefined ? icon : undefined,
-        sortOrder: sortOrder !== undefined ? parseInt(sortOrder) : undefined,
+        name: name !== undefined ? name.trim() : existing.name,
+        color: color !== undefined ? color : existing.color,
+        icon: icon !== undefined ? icon : existing.icon,
+        sortOrder: sortOrder !== undefined ? parseInt(sortOrder) : existing.sortOrder,
       },
     });
 
     return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: "Erro ao atualizar categoria." }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Erro ao atualizar categoria." }, { status: 500 });
   }
 }
 
@@ -47,7 +59,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Erro ao excluir categoria." }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Erro ao excluir categoria." }, { status: 500 });
   }
 }

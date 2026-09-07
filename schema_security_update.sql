@@ -7,52 +7,13 @@
 -- ==============================================================================
 
 -- =========================================
--- 1. CORRIGIR USUARIO RODRIGO COM ID ERRADO
--- =========================================
--- O Rodrigo foi inserido com id='Rodrigo' (texto) em vez do UUID do Supabase Auth.
--- Vamos corrigir isso: delete o registro antigo e um novo será criado pelo trigger.
-
--- Antes: salvar dados existentes
-DO $$
-DECLARE
-  rodrigo_auth_id TEXT := '26cb6391-3aea-4830-8c51-937ffcdd4447';
-  rodrigo_email TEXT := 'keittonyr@gmail.com';
-BEGIN
-  -- Deletar o registro antigo com ID errado
-  DELETE FROM public."User" WHERE id = 'Rodrigo' AND email = rodrigo_email;
-
-  -- Inserir com o ID correto do Supabase Auth
-  INSERT INTO public."User" (id, name, email, "passwordHash", role, "createdAt", "updatedAt")
-  VALUES (
-    rodrigo_auth_id,
-    'Rodrigo',
-    rodrigo_email,
-    'managed_by_supabase_auth',
-    'USER',
-    NOW(),
-    NOW()
-  )
-  ON CONFLICT (id) DO UPDATE SET
-    name = EXCLUDED.name,
-    email = EXCLUDED.email,
-    "updatedAt" = NOW();
-
-  -- Criar UserSettings para o Rodrigo
-  INSERT INTO public."UserSettings" (id, name, email, theme, "createdAt", "updatedAt")
-  VALUES (rodrigo_auth_id, 'Rodrigo', rodrigo_email, 'dark', NOW(), NOW())
-  ON CONFLICT (id) DO NOTHING;
-
-  RAISE NOTICE 'Rodrigo corrigido com UUID correto: %', rodrigo_auth_id;
-END $$;
-
--- =========================================
--- 2. ADICIONAR CAMPO userId EM ActivityLog
+-- 1. ADICIONAR CAMPO userId EM ActivityLog
 -- =========================================
 ALTER TABLE public."ActivityLog"
   ADD COLUMN IF NOT EXISTS "userId" TEXT REFERENCES public."User"("id") ON DELETE SET NULL;
 
 -- =========================================
--- 3. ADICIONAR CHECK CONSTRAINTS DE ROLE
+-- 2. ADICIONAR CHECK CONSTRAINTS DE ROLE
 -- =========================================
 -- Previne roles inválidas no banco
 DO $$ BEGIN

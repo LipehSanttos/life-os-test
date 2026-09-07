@@ -29,11 +29,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Nenhum arquivo de imagem foi enviado." }, { status: 400 });
     }
 
-    // Validação estrita de tipos MIME aceitos
-    const validMimes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "image/svg+xml"];
-    if (!validMimes.includes(file.type)) {
+    // Validação estrita de tipos MIME aceitos (restringe formatos raster/vetoriais perigosos como SVG)
+    const MIME_TO_EXT: Record<string, string> = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/webp": ".webp",
+      "image/gif": ".gif",
+      "image/avif": ".avif",
+    };
+
+    const ext = MIME_TO_EXT[file.type];
+    if (!ext) {
       return NextResponse.json(
-        { error: "Formato de arquivo inválido. Envie uma imagem PNG, JPG, WEBP ou GIF." },
+        { error: "Formato de arquivo inválido. Apenas imagens PNG, JPG, JPEG, WEBP, GIF ou AVIF são permitidas." },
         { status: 400 }
       );
     }
@@ -53,9 +61,8 @@ export async function POST(req: NextRequest) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    // Geração de nome único e seguro com timestamp e hash aleatório
-    const ext = path.extname(file.name) || (file.type === "image/png" ? ".png" : ".jpg");
-    const safeHash = crypto.randomBytes(8).toString("hex");
+    // Geração de nome único e seguro com hash criptográfico e extensão controlada pelo servidor
+    const safeHash = crypto.randomBytes(16).toString("hex");
     const filename = `cover_${Date.now()}_${safeHash}${ext}`;
     const filePath = path.join(uploadsDir, filename);
 

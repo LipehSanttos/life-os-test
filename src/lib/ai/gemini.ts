@@ -51,7 +51,7 @@ export async function processAIChat(prompt: string, history: Message[] = [], use
       }),
     ]);
 
-    const userName = user?.name || userSettings?.name || "Eduardo Felipe";
+    const userName = user?.name || userSettings?.name || "Usuário";
 
     const tasksContext = tasks.map((t) => {
       const due = t.dueDate ? format(new Date(t.dueDate), "dd/MM/yyyy") : "Sem data";

@@ -28,6 +28,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "O ID da mensagem é obrigatório." }, { status: 400 });
     }
 
+    // SEGURANÇA: Previne IDOR validando se a mensagem e a sessão pertencem ao usuário autenticado
+    const targetMessage = await prisma.chatMessage.findFirst({
+      where: { id: messageId },
+      include: { session: true },
+    });
+
+    if (!targetMessage || !targetMessage.session || targetMessage.session.userId !== user.id) {
+      return NextResponse.json(
+        { error: "Ação não autorizada. A mensagem ou sessão de chat não foi encontrada." },
+        { status: 404 }
+      );
+    }
+
     // Se o usuário cancelou a ação no cartão
     if (!confirmed) {
       await prisma.chatMessage.update({

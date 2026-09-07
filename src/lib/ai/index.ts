@@ -29,9 +29,10 @@ export async function processUnifiedAIChat(
   history: Message[] = [],
   userId?: string
 ): Promise<NLPResult> {
-  const userSettings = await prisma.userSettings.findUnique({
-    where: { id: "user_default" },
-  });
+  const userSettings = userId
+    ? (await prisma.userSettings.findUnique({ where: { id: userId } })) ||
+      (await prisma.userSettings.findUnique({ where: { id: "user_default" } }))
+    : await prisma.userSettings.findUnique({ where: { id: "user_default" } });
 
   const preferredProvider = userSettings?.aiProvider || "HYBRID";
   const geminiKey = process.env.GEMINI_API_KEY || userSettings?.geminiApiKey;

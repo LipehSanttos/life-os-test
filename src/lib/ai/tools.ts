@@ -96,8 +96,22 @@ export async function executeTool(name: string, args: any, userId?: string) {
 
     /** Atualização do status de uma tarefa (ex: COMPLETED) */
     case "update_task_status": {
+      const existingTask = await prisma.task.findFirst({
+        where: {
+          id: args.taskId,
+          ...(userId ? { userId } : {}),
+        },
+      });
+
+      if (!existingTask) {
+        return {
+          success: false,
+          message: "Tarefa não encontrada ou permissão negada.",
+        };
+      }
+
       const task = await prisma.task.update({
-        where: { id: args.taskId },
+        where: { id: existingTask.id },
         data: {
           status: args.status,
           completedAt: args.status === "COMPLETED" ? now : null,
@@ -137,7 +151,12 @@ export async function executeTool(name: string, args: any, userId?: string) {
     case "update_reading_progress": {
       let book;
       if (args.bookId) {
-        book = await prisma.book.findUnique({ where: { id: args.bookId } });
+        book = await prisma.book.findFirst({
+          where: {
+            id: args.bookId,
+            ...(userId ? { userId } : {}),
+          },
+        });
       } else if (args.bookTitle) {
         book = await prisma.book.findFirst({
           where: {

@@ -23,16 +23,19 @@ export async function GET(req: NextRequest) {
     const isAdmin = user.role === "ADMIN";
 
     let settings = await prisma.userSettings.findUnique({
-      where: { id: "user_default" },
+      where: { id: user.id },
     });
 
     if (!settings) {
       settings = await prisma.userSettings.create({
         data: {
-          id: "user_default",
-          name: user.name || "Eduardo Felipe",
-          email: user.email || "eduardo.felipe@lifeos.com",
+          id: user.id,
+          name: user.name || "Usuário",
+          email: user.email,
           aiProvider: "HYBRID",
+          theme: "dark",
+          notificationsEnabled: true,
+          autoConfirmAiActions: false,
         },
       });
     }
@@ -115,12 +118,12 @@ export async function PATCH(req: NextRequest) {
     }
 
     const updated = await prisma.userSettings.upsert({
-      where: { id: "user_default" },
+      where: { id: user.id },
       update: updateData,
       create: {
-        id: "user_default",
-        name: user.name || "Eduardo Felipe",
-        email: user.email || "eduardo.felipe@lifeos.com",
+        id: user.id,
+        name: user.name || "Usuário",
+        email: user.email,
         theme: theme || "dark",
         autoConfirmAiActions: Boolean(autoConfirmAiActions),
         notificationsEnabled: notificationsEnabled !== undefined ? Boolean(notificationsEnabled) : true,

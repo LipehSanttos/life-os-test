@@ -8,11 +8,13 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
-/** Retorna o segredo HMAC — verificado só em runtime, nunca durante o build */
+/** Retorna o segredo HMAC — verificado em runtime */
 function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
   if (!secret || secret.length < 16) {
-    return "lifeos_super_secure_jwt_token_auth_secret_2026_supabase";
+    throw new Error(
+      "[CRITICAL SECURITY ERROR] A variável de ambiente AUTH_SECRET deve ser configurada com no mínimo 16 caracteres."
+    );
   }
   return secret;
 }
