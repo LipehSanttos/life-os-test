@@ -8,12 +8,13 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 
-/** Retorna o segredo HMAC — usa variável de ambiente ou contingência segura de runtime */
+/** Retorna o segredo HMAC — obtido exclusivamente das variáveis de ambiente */
 function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
   if (!secret || secret.length < 16) {
-    // Segredo de contingência caso a variável de ambiente não tenha sido injetada no provedor de hospedagem
-    return "lifeos_super_secure_jwt_token_auth_secret_2026_supabase";
+    throw new Error(
+      "[Configuração Ausente] A variável de ambiente AUTH_SECRET deve estar configurada no servidor com no mínimo 16 caracteres."
+    );
   }
   return secret;
 }

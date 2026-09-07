@@ -10,9 +10,14 @@ let lastUsedUrl: string | null = null;
 let lastUsedKey: string | null = null;
 
 export function getSupabaseClient(): SupabaseClient {
-  // Prioriza variável de ambiente; caso não definida no Cloudflare, utiliza o fallback do projeto
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vbenjekbrfompfmjvjqf.supabase.co";
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-anon-key";
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    throw new Error(
+      "[Configuração Ausente] As variáveis NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY devem estar configuradas no ambiente."
+    );
+  }
 
   if (!cachedClient || lastUsedUrl !== url || lastUsedKey !== anonKey) {
     cachedClient = createClient(url, anonKey, {

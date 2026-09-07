@@ -14,8 +14,8 @@ let lastUsedKey: string | null = null;
  * Retorna se o Supabase está configurado com URL e Chave válidas.
  */
 export function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://vbenjekbrfompfmjvjqf.supabase.co";
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return Boolean(url && key && url.startsWith("http"));
 }
 
@@ -23,9 +23,14 @@ export function isSupabaseConfigured(): boolean {
  * Obtém ou inicializa a instância administrativa do Supabase com verificação dinâmica de ambiente.
  */
 export function getSupabaseAdmin(): SupabaseClient {
-  // Prioriza variável de ambiente; caso não definida no Cloudflare, utiliza o endpoint do projeto
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://vbenjekbrfompfmjvjqf.supabase.co";
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error(
+      "[Configuração Ausente] As variáveis NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY devem estar configuradas no ambiente."
+    );
+  }
 
   if (!cachedAdminClient || lastUsedUrl !== url || lastUsedKey !== key) {
     cachedAdminClient = createClient(url, key, {
