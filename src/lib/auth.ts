@@ -86,37 +86,65 @@ export function verifyPassword(password: string, storedHash?: string | null): bo
 }
 
 /**
- * Cria token de sessão assinado com HMAC-SHA256 (7 dias).
+ * Deriva uma chave de 256 bits (32 bytes) a partir do AUTH_SECRET para criptografia AES-256-GCM.
+ */
+function getEncryptionKey(): Buffer {
+  return crypto.createHash("sha256").update(getAuthSecret()).digest();
+}
+
+/**
+ * Cria um token de sessão completamente criptografado com AES-256-GCM (7 dias).
+ * NENHUM dado (e-mail, nome, id) fica visível em texto puro no cookie.
+ * Formato gerado: iv.authTag.ciphertext (todos em Base64URL)
  */
 export function createToken(payload: { id: string; email: string; name: string; role?: string }): string {
   const data = JSON.stringify({
     ...payload,
     role: payload.role || "USER",
-    exp: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 dias
+    exp: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 dias de validade
     iat: Date.now(),
   });
-  const encodedData = Buffer.from(data).toString("base64url");
-  const signature = crypto.createHmac("sha256", getAuthSecret()).update(encodedData).digest("base64url");
-  return `${encodedData}.${signature}`;
+
+  // Gera vetor de inicialização (IV) de 12 bytes aleatório para cada token
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", getEncryptionKey(), iv);
+
+  let encrypted = cipher.update(data, "utf8", "base64url");
+  encrypted += cipher.final("base64url");
+
+  // Tag de autenticação de 16 bytes que garante integridade contra adulterações
+  const authTag = cipher.getAuthTag().toString("base64url");
+  const ivEncoded = iv.toString("base64url");
+
+  return `${ivEncoded}.${authTag}.${encrypted}`;
 }
 
 /**
- * Decodifica e verifica assinatura criptográfica e validade do token.
+ * Decifra e valida a integridade do token usando AES-256-GCM.
+ * Rejeita imediatamente tokens adulterados, expirados ou corrompidos.
  */
 export function verifyToken(token: string): { id: string; email: string; name: string; role: string } | null {
   try {
-    const [encodedData, signature] = token.split(".");
-    if (!encodedData || !signature) return null;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
 
-    const expectedSignature = crypto.createHmac("sha256", getAuthSecret()).update(encodedData).digest("base64url");
+    const [ivEncoded, authTagEncoded, ciphertext] = parts;
+    if (!ivEncoded || !authTagEncoded || !ciphertext) return null;
 
-    // Comparação em tempo constante
-    const a = Buffer.from(signature, "base64url");
-    const b = Buffer.from(expectedSignature, "base64url");
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const iv = Buffer.from(ivEncoded, "base64url");
+    const authTag = Buffer.from(authTagEncoded, "base64url");
 
-    const payload = JSON.parse(Buffer.from(encodedData, "base64url").toString("utf-8"));
+    if (iv.length !== 12 || authTag.length !== 16) return null;
 
+    const decipher = crypto.createDecipheriv("aes-256-gcm", getEncryptionKey(), iv);
+    decipher.setAuthTag(authTag);
+
+    let decrypted = decipher.update(ciphertext, "base64url", "utf8");
+    decrypted += decipher.final("utf8");
+
+    const payload = JSON.parse(decrypted);
+
+    // Valida tempo de expiração do token
     if (payload.exp && Date.now() > payload.exp) return null;
 
     return {
@@ -126,6 +154,7 @@ export function verifyToken(token: string): { id: string; email: string; name: s
       role: payload.role || "USER",
     };
   } catch {
+    // Falha na decifragem ou adulteração de dados
     return null;
   }
 }
