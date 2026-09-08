@@ -111,8 +111,20 @@ export async function POST(req: NextRequest) {
 
     const targetEmail = cleanLogin.includes("@") ? cleanLogin : existingUser?.email;
 
+    let supabaseErrorMessage: string | null = null;
+
     // 1. Tentativa de autenticação via Supabase Auth
-    if (isSupabaseConfigured() && targetEmail) {
+    if (isSupabaseConfigured()) {
+      if (!targetEmail) {
+        return NextResponse.json(
+          {
+            error:
+              "Não foi possível identificar o e-mail correspondente. Por favor, faça login utilizando o seu endereço de e-mail completo.",
+          },
+          { status: 400 }
+        );
+      }
+
       try {
         const supabaseAdmin = getSupabaseAdmin();
         const { data: sbData, error: sbError } = await supabaseAdmin.auth.signInWithPassword({
@@ -171,11 +183,15 @@ export async function POST(req: NextRequest) {
           resetAttempts(identifier);
           return response;
         } else if (sbError) {
-          console.warn("[auth/login] Supabase Auth aviso:", sbError.message);
+          console.warn("[auth/login] Supabase Auth erro:", sbError.message);
+          supabaseErrorMessage = sbError.message;
         }
       } catch (sbErr: any) {
         console.warn("[auth/login] Falha ao conectar no Supabase Auth:", sbErr.message);
+        supabaseErrorMessage = sbErr.message;
       }
+    } else {
+      supabaseErrorMessage = "Supabase não está configurado no servidor (verifique NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY).";
     }
 
     // 2. Autenticação de contingência via hash PBKDF2 na tabela User
@@ -211,14 +227,27 @@ export async function POST(req: NextRequest) {
 
     recordFailedAttempt(identifier);
 
+    // Formata mensagem de erro específica do Supabase em português
+    let detailedError = "Credenciais inválidas. Verifique seu e-mail e senha.";
+    if (supabaseErrorMessage) {
+      const lowerErr = supabaseErrorMessage.toLowerCase();
+      if (lowerErr.includes("invalid login credentials")) {
+        detailedError = "E-mail ou senha incorretos no Supabase.";
+      } else if (lowerErr.includes("email not confirmed")) {
+        detailedError = "Seu e-mail ainda não foi confirmado no Supabase. Confirme o e-mail ou habilite auto-confirmação no painel.";
+      } else {
+        detailedError = `Supabase Auth: ${supabaseErrorMessage}`;
+      }
+    }
+
     return NextResponse.json(
-      { error: "Credenciais inválidas. Verifique seu e-mail/usuário e senha digitados." },
+      { error: detailedError },
       { status: 401 }
     );
   } catch (error: any) {
     console.error("[auth/login] Erro interno:", error.message);
     return NextResponse.json(
-      { error: "Erro ao processar autenticação. Tente novamente." },
+      { error: error.message || "Erro ao processar autenticação. Tente novamente." },
       { status: 500 }
     );
   }
