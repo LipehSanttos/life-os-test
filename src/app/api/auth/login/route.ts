@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword, createToken, AUTH_COOKIE_NAME, isValidUsernameOrEmail, hashPassword } from "@/lib/auth";
-import { getSupabaseAdmin, isSupabaseConfigured } from "@/lib/supabase/admin";
+import { getSupabaseAdmin, isSupabaseConfigured, getSupabaseConfigStatus } from "@/lib/supabase/admin";
 
 // Estrutura de Rate Limiting em memória (janela deslizante)
 interface RateLimitRecord {
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
         supabaseErrorMessage = sbErr.message;
       }
     } else {
-      supabaseErrorMessage = "Supabase não está configurado no servidor (verifique NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY).";
+      supabaseErrorMessage = getSupabaseConfigStatus();
     }
 
     // 2. Autenticação de contingência via hash PBKDF2 na tabela User

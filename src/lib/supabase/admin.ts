@@ -20,6 +20,27 @@ export function isSupabaseConfigured(): boolean {
 }
 
 /**
+ * Retorna o diagnóstico detalhado das variáveis de ambiente disponíveis.
+ */
+export function getSupabaseConfigStatus(): string {
+  const hasUrl = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL);
+  const hasAnon = Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const hasService = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const hasAuth = Boolean(process.env.AUTH_SECRET);
+
+  const missing: string[] = [];
+  if (!hasUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+  if (!hasAnon) missing.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  if (!hasService) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  if (!hasAuth) missing.push("AUTH_SECRET");
+
+  if (missing.length > 0) {
+    return `Variáveis não encontradas na Cloudflare: ${missing.join(", ")}`;
+  }
+  return "Todas as variáveis foram detectadas.";
+}
+
+/**
  * Obtém ou inicializa a instância administrativa do Supabase com verificação dinâmica de ambiente.
  */
 export function getSupabaseAdmin(): SupabaseClient {
