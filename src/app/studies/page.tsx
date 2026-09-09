@@ -153,7 +153,7 @@ export default function StudiesPage() {
                   disabled={course.currentModule >= course.totalModules}
                   className="w-full py-2.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-400 text-xs font-bold transition-all disabled:opacity-40"
                 >
-                  {course.currentModule >= course.totalModules ? "Curso Concluído 🎉" : "+ Concluir 1 Módulo"}
+                  {course.currentModule >= course.totalModules ? "Curso Concluído" : "+ Concluir 1 Módulo"}
                 </button>
               </div>
             </div>
@@ -171,7 +171,7 @@ export default function StudiesPage() {
         <div className="space-y-2">
           {academicTasks.length === 0 ? (
             <div className="py-8 text-center text-sm text-muted-foreground font-medium">
-              🎉 Nenhum trabalho acadêmico pendente!
+              Nenhum trabalho acadêmico pendente.
             </div>
           ) : (
             academicTasks.map((t) => (

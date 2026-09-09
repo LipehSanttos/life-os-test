@@ -95,7 +95,7 @@ export default function UpcomingPage() {
       <div className="space-y-6">
         {Object.keys(groupedTasks).length === 0 ? (
           <div className="p-12 rounded-xl border border-border/30 bg-card/60 text-center text-sm sm:text-base text-muted-foreground font-medium">
-            🎉 Nenhuma tarefa agendada para o período selecionado.
+            Nenhuma tarefa agendada para o período selecionado.
           </div>
         ) : (
           Object.entries(groupedTasks).map(([date, dayTasks]) => (

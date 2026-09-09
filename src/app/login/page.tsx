@@ -36,7 +36,7 @@ function LoginForm() {
         throw new Error(data.error || "Falha na autenticação.");
       }
 
-      toast.success(`Bem-vindo, ${data.user?.name || "ao Life OS"}! 👋`);
+      toast.success(`Bem-vindo, ${data.user?.name || "ao Life OS"}.`);
       router.push(from);
       router.refresh();
     } catch (err: any) {

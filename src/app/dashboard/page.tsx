@@ -174,7 +174,7 @@ export default function DashboardPage() {
             <div className="space-y-2">
               {todayTasks.length === 0 ? (
                 <div className="py-8 text-center text-sm text-muted-foreground font-medium">
-                  🎉 Nenhuma tarefa agendada para hoje.
+                  Nenhuma tarefa agendada para hoje.
                 </div>
               ) : (
                 todayTasks.map((task) => (

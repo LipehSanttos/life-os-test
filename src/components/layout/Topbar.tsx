@@ -45,8 +45,8 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
           const todayBirthdays = (res.birthdays || []).filter((b: any) => b.isToday);
           if (todayBirthdays.length > 0) {
             todayBirthdays.forEach((b: any) => {
-              sendBrowserNotification(`🎂 Hoje é Aniversário!`, {
-                body: `Parabenize: ${b.title}! 🎉`,
+              sendBrowserNotification(`Hoje é Aniversário!`, {
+                body: `Lembrete: ${b.title}`,
               });
             });
           }
@@ -58,7 +58,6 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
   const handleLogout = async () => {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      toast.info("Você saiu da conta.");
       router.push("/login");
       router.refresh();
     } catch {
@@ -67,61 +66,53 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between h-16 px-4 md:px-8 border-b border-border/30 bg-card/30 backdrop-blur-2xl">
-      {/* Left: Mobile Menu & Search */}
-      <div className="flex items-center gap-3">
+    <header className="h-16 border-b border-border/40 bg-background/80 backdrop-blur-xl sticky top-0 z-40 px-4 sm:px-6 flex items-center justify-between gap-4">
+      {/* Left: Mobile Menu Trigger & Search */}
+      <div className="flex items-center gap-3 flex-1 max-w-md">
         <button
           onClick={onOpenMobileMenu}
-          className="p-2.5 rounded-lg hover:bg-muted/40 text-muted-foreground md:hidden transition-colors"
-          title="Menu"
+          className="p-2 rounded-xl hover:bg-muted/60 text-muted-foreground md:hidden transition-colors border border-border/20"
+          title="Abrir Menu"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4" />
         </button>
 
         <button
           onClick={onOpenSearch}
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg border border-border/40 bg-background/50 hover:bg-muted/30 input-glow text-muted-foreground hover:text-foreground text-sm transition-all w-56 sm:w-80 md:w-96 shadow-xs group"
+          className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-muted/40 hover:bg-muted/80 border border-border/40 text-muted-foreground hover:text-foreground text-xs font-medium transition-all group shadow-xs"
         >
-          <Search className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-          <span className="flex-1 text-left truncate text-sm font-medium">Buscar tarefas, projetos, contas...</span>
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-xs font-semibold bg-muted border border-border/60 rounded-md text-muted-foreground">
-            ⌘K
+          <div className="flex items-center gap-2.5">
+            <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <span>Buscar tarefas, projetos, livros, finanças...</span>
+          </div>
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono font-bold bg-background border border-border/60 rounded-md text-muted-foreground shadow-2xs">
+            Ctrl K
           </kbd>
         </button>
       </div>
 
-      {/* Right: Quick actions */}
+      {/* Right Tools */}
       <div className="flex items-center gap-2">
-        <Link
-          href="/chat"
-          className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 glow-border-hover text-sm font-semibold shadow-xs transition-all hover:scale-[1.02]"
-        >
-          <Sparkles className="w-4 h-4 animate-pulse text-primary" />
-          <span>Falar com a IA</span>
-        </Link>
-
-        {/* Notifications Dropdown */}
-        <div className="relative">
+        {/* Notifications Popover */}
+        <div className="relative" ref={notifRef}>
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2.5 rounded-lg hover:bg-muted/40 text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border/50"
-            title="Central de Avisos e Aniversários"
+            onClick={() => setOpenNotifs(!openNotifs)}
+            className="relative p-2.5 rounded-xl hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all border border-border/20 active:scale-95"
+            title="Lembretes e Aniversários"
           >
             <Bell className="w-4 h-4" />
             {data.totalCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white ring-2 ring-card animate-pulse">
-                {data.totalCount}
-              </span>
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-background animate-pulse" />
             )}
           </button>
 
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 p-4 rounded-xl border border-border/30 bg-card/95 backdrop-blur-2xl glow-border text-card-foreground shadow-2xl z-50 animate-fade-in max-h-[80vh] overflow-y-auto">
-              <div className="flex items-center justify-between pb-3 border-b border-border/40 mb-3">
-                <span className="font-bold text-sm text-foreground flex items-center gap-2">
+          {openNotifs && (
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-2xl shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2 font-bold text-sm text-foreground">
                   <Bell className="w-4 h-4 text-primary" />
-                  Avisos & Notificações
-                </span>
+                  <span>Central de Lembretes</span>
+                </div>
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25">
                   {data.totalCount} {data.totalCount === 1 ? "alerta" : "alertas"}
                 </span>
@@ -130,7 +121,7 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
               <div className="space-y-4">
                 {data.totalCount === 0 ? (
                   <div className="py-8 text-center text-sm text-muted-foreground">
-                    🎉 Tudo em dia! Sem aniversários próximos ou tarefas atrasadas.
+                    Tudo em dia. Sem aniversários próximos ou tarefas atrasadas.
                   </div>
                 ) : (
                   <>
@@ -152,7 +143,7 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
                           >
                             <div className="flex flex-col gap-0.5">
                               <span className="font-bold text-rose-300 flex items-center gap-1.5">
-                                🎂 {b.title}
+                                {b.title}
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 Data: {b.formattedDate}

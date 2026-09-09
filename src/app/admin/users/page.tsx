@@ -103,7 +103,7 @@ export default function AdminUsersPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Falha ao criar usuário.");
 
-      toast.success(`Usuário ${data.name} criado com sucesso! 🎉`);
+      toast.success(`Usuário ${data.name} criado com sucesso.`);
       setNewName("");
       setNewEmail("");
       setNewPassword("");

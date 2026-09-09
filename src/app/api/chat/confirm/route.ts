@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       where: { id: messageId },
       data: {
         pendingAction: null,
-        content: `✅ **${resultMessage}**`,
+        content: `**${resultMessage}**`,
       },
     });
 

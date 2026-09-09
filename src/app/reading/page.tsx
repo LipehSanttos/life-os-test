@@ -123,14 +123,14 @@ export default function ReadingPage() {
       }
 
       setCoverUrl(data.url);
-      toast.success("Capa enviada com sucesso! 🖼️");
+      toast.success("Capa enviada com sucesso.");
     } catch (err: any) {
       // Fallback to base64 Data URL
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
           setCoverUrl(e.target.result as string);
-          toast.success("Imagem carregada localmente!");
+          toast.success("Imagem carregada localmente.");
         }
       };
       reader.readAsDataURL(file);
@@ -162,7 +162,7 @@ export default function ReadingPage() {
 
       if (!res.ok) throw new Error("Erro ao adicionar livro.");
 
-      toast.success("Livro adicionado à sua biblioteca com sucesso! 📚");
+      toast.success("Livro adicionado à sua biblioteca com sucesso.");
       resetForm();
       setModalOpen(false);
       loadData();
@@ -197,7 +197,7 @@ export default function ReadingPage() {
 
       if (!res.ok) throw new Error("Erro ao atualizar livro.");
 
-      toast.success("Livro atualizado com sucesso!");
+      toast.success("Livro atualizado com sucesso.");
       setEditModalOpen(false);
       setSelectedBook(null);
       loadData();
@@ -235,7 +235,7 @@ export default function ReadingPage() {
         }),
       });
 
-      toast.success(`Progresso registrado: +${count} páginas! 📖`);
+      toast.success(`Progresso registrado: +${count} páginas.`);
       loadData();
     } catch {
       toast.error("Erro ao registrar leitura.");
@@ -410,7 +410,7 @@ export default function ReadingPage() {
                     <span>
                       Página <strong>{book.currentPage}</strong> de {book.totalPages}
                     </span>
-                    <span>{isCompleted ? "✅ Concluído" : `${book.totalPages - book.currentPage} restando`}</span>
+                    <span>{isCompleted ? "Concluído" : `${book.totalPages - book.currentPage} restando`}</span>
                   </div>
 
                   <div className="w-full h-2.5 rounded-full bg-border/70 overflow-hidden">
@@ -589,7 +589,7 @@ export default function ReadingPage() {
                         coverTab === "upload" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      📁 Enviar Imagem
+                      Enviar Imagem
                     </button>
                     <button
                       type="button"
@@ -598,7 +598,7 @@ export default function ReadingPage() {
                         coverTab === "url" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      🔗 Colar Link
+                      Colar Link
                     </button>
                   </div>
                 </div>
@@ -780,7 +780,7 @@ export default function ReadingPage() {
                         coverTab === "upload" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      📁 Enviar Imagem
+                      Enviar Imagem
                     </button>
                     <button
                       type="button"
@@ -789,7 +789,7 @@ export default function ReadingPage() {
                         coverTab === "url" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      🔗 Colar Link
+                      Colar Link
                     </button>
                   </div>
                 </div>

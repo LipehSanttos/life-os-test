@@ -136,7 +136,7 @@ export default function CalendarPage() {
                       key={b.id}
                       className="truncate px-2 py-0.5 rounded-md text-xs font-semibold bg-teal-500/10 text-teal-500 border border-teal-500/20"
                     >
-                      💰 {b.title}
+                      {b.title}
                     </div>
                   ))}
                   {dayTasks.length + dayBills.length > 3 && (

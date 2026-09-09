@@ -101,7 +101,7 @@ export default function FinancePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus }),
       });
-      toast.success(nextStatus === "PAID" ? "Conta marcada como paga! 💰" : "Conta reaberta como pendente.");
+      toast.success(nextStatus === "PAID" ? "Conta marcada como paga." : "Conta reaberta como pendente.");
       loadData();
     } catch (e) {
       toast.error("Erro ao atualizar conta.");
@@ -179,7 +179,7 @@ export default function FinancePage() {
 
         {reminders.length === 0 ? (
           <div className="py-12 text-center text-sm text-muted-foreground font-medium">
-            🎉 Nenhuma conta cadastrada. Clique em <strong>"Nova Conta"</strong> para registrar seus pagamentos.
+            Nenhuma conta cadastrada. Clique em <strong>"Nova Conta"</strong> para registrar seus pagamentos.
           </div>
         ) : (
           <div className="space-y-3">

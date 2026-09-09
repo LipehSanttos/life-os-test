@@ -59,7 +59,7 @@ export default function InboxPage() {
         <div className="space-y-2">
           {tasks.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground font-medium">
-              🎉 Sua Inbox está totalmente limpa e vazia!
+              Sua Inbox está totalmente limpa e vazia.
             </div>
           ) : (
             tasks.map((task) => (

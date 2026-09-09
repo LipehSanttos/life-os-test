@@ -59,8 +59,8 @@ export async function GET(req: NextRequest) {
         });
 
         let statusText = `em ${diffDays} dias`;
-        if (diffDays === 0) statusText = "É Hoje! 🎉";
-        else if (diffDays === 1) statusText = "É Amanhã! 🎁";
+        if (diffDays === 0) statusText = "É Hoje!";
+        else if (diffDays === 1) statusText = "É Amanhã!";
 
         upcomingBirthdays.push({
           id: bTask.id,

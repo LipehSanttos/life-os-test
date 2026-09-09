@@ -39,13 +39,13 @@ export function DailyGreeting({
           </div>
 
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">
-            <span className="text-gradient">{greeting}{userName ? <>, <span className="text-gradient-primary">{userName}</span></> : ""}! 👋</span>
+            <span className="text-gradient">{greeting}{userName ? <>, <span className="text-gradient-primary">{userName}</span></> : ""}</span>
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground font-medium max-w-2xl leading-relaxed">
             {overdueCount > 0 ? (
               <span className="text-rose-400 font-semibold">
-                ⚠️ Você tem {overdueCount} {overdueCount === 1 ? "tarefa atrasada" : "tarefas atrasadas"} precisando de atenção.
+                Você tem {overdueCount} {overdueCount === 1 ? "tarefa atrasada" : "tarefas atrasadas"} precisando de atenção.
               </span>
             ) : todayCount > 0 ? (
               <span>

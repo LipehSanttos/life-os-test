@@ -67,20 +67,20 @@ export async function processFallbackNLP(prompt: string, userId?: string): Promi
 
     if (overdueTasks.length === 0 && overdueBills.length === 0) {
       return {
-        reply: "🎉 Excelente notícia! Você **não tem nenhuma tarefa ou conta atrasada** no momento.",
+        reply: "Excelente notícia: você **não tem nenhuma tarefa ou conta atrasada** no momento.",
       };
     }
 
-    let reply = "⚠️ **Você possui itens que necessitam de atenção:**\n\n";
+    let reply = "**Itens que necessitam de atenção:**\n\n";
     if (overdueTasks.length > 0) {
-      reply += `📋 **Tarefas Atrasadas (${overdueTasks.length}):**\n`;
+      reply += `**Tarefas Atrasadas (${overdueTasks.length}):**\n`;
       overdueTasks.forEach((t) => {
         reply += `- **${t.title}** (${t.category?.name || "Sem categoria"}) - Prazo: ${formatDate(t.dueDate)}${t.dueTime ? ` às ${t.dueTime}` : ""}\n`;
       });
     }
 
     if (overdueBills.length > 0) {
-      reply += `\n💰 **Contas Vencidas (${overdueBills.length}):**\n`;
+      reply += `\n**Contas Vencidas (${overdueBills.length}):**\n`;
       overdueBills.forEach((b) => {
         reply += `- **${b.title}**${b.amount ? `: ${formatCurrency(b.amount)}` : ""} - Vencimento: ${formatDate(b.dueDate)}\n`;
       });
@@ -120,19 +120,19 @@ export async function processFallbackNLP(prompt: string, userId?: string): Promi
 
     if (todayTasks.length === 0 && todayBills.length === 0) {
       return {
-        reply: "☀️ Você **não possui tarefas pendentes para hoje**. Deseja que eu agende alguma atividade?",
+        reply: "Você **não possui tarefas pendentes para hoje**. Deseja que eu agende alguma atividade?",
       };
     }
 
-    let reply = `📅 **Aqui está o seu planejamento para hoje (${format(now, "dd/MM/yyyy")}):**\n\n`;
+    let reply = `**Planejamento para hoje (${format(now, "dd/MM/yyyy")}):**\n\n`;
     if (todayTasks.length > 0) {
-      reply += "📋 **Tarefas de Hoje:**\n";
+      reply += "**Tarefas de Hoje:**\n";
       todayTasks.forEach((t) => {
-        reply += `- [ ] **${t.title}** [${t.priority}] ${t.dueTime ? `⏰ ${t.dueTime}` : ""}\n`;
+        reply += `- [ ] **${t.title}** [${t.priority}] ${t.dueTime ? `(${t.dueTime})` : ""}\n`;
       });
     }
     if (todayBills.length > 0) {
-      reply += "\n💰 **Contas com Vencimento Hoje:**\n";
+      reply += "\n**Contas com Vencimento Hoje:**\n";
       todayBills.forEach((b) => {
         reply += `- **${b.title}**${b.amount ? `: ${formatCurrency(b.amount)}` : ""}\n`;
       });
@@ -292,8 +292,8 @@ export async function processFallbackNLP(prompt: string, userId?: string): Promi
   const valorInfo = extractedAmount ? ` | Valor: ${formatCurrency(extractedAmount)}` : "";
 
   const replyPrefix = isBirthday
-    ? `🎂 Que ótimo! Registrei o aniversário de **"${cleanTitle}"** para **${formattedDate}** (Lembrete Anual).`
-    : `Entendido! Agendei a tarefa **"${cleanTitle}"** (${category?.name || "Geral"}) para **${formattedDate}** às **${dueTime}**${extractedAmount ? ` no valor de **${formatCurrency(extractedAmount)}**` : ""}.`;
+    ? `Registrei o aniversário de **"${cleanTitle}"** para **${formattedDate}** (Lembrete Anual).`
+    : `Entendido. Agendei a tarefa **"${cleanTitle}"** (${category?.name || "Geral"}) para **${formattedDate}** às **${dueTime}**${extractedAmount ? ` no valor de **${formatCurrency(extractedAmount)}**` : ""}.`;
 
   return {
     reply: `${replyPrefix}\n\nConfirme a atividade no cartão abaixo:`,

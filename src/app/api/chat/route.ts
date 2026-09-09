@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
         data: {
           sessionId: newSession.id,
           role: "assistant",
-          content: `Olá, **${user.name}**! 👋 Sou seu assistente de organização do Life OS. Como posso te ajudar hoje?`,
+          content: `Olá, **${user.name}**. Sou seu assistente de organização do Life OS. Como posso te ajudar hoje?`,
         },
       });
       sessions = [newSession];

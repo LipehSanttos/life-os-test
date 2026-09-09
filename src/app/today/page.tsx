@@ -141,7 +141,7 @@ export default function TodayPage() {
         <div className="space-y-2">
           {filteredTasks.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground font-medium">
-              🎉 Nenhuma tarefa pendente para hoje nesta categoria!
+              Nenhuma tarefa pendente para hoje nesta categoria.
             </div>
           ) : (
             filteredTasks.map((task) => (
