@@ -177,12 +177,16 @@ export async function getCurrentUser() {
       where: { id: decoded.id },
     });
 
-    if (!user) return null;
+    const resolvedName =
+      user.name?.trim() ||
+      decoded.name?.trim() ||
+      user.email?.split("@")[0] ||
+      "";
 
     return {
       id: user.id,
       email: user.email,
-      name: user.name,
+      name: resolvedName,
       role: user.role,
       avatarUrl: user.avatarUrl ?? null,
       createdAt: user.createdAt,
