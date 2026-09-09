@@ -94,9 +94,9 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
       {/* Right Tools */}
       <div className="flex items-center gap-2">
         {/* Notifications Popover */}
-        <div className="relative" ref={notifRef}>
+        <div className="relative">
           <button
-            onClick={() => setOpenNotifs(!openNotifs)}
+            onClick={() => setShowNotifications(!showNotifications)}
             className="relative p-2.5 rounded-xl hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all border border-border/20 active:scale-95"
             title="Lembretes e Aniversários"
           >
@@ -106,7 +106,7 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
             )}
           </button>
 
-          {openNotifs && (
+          {showNotifications && (
             <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-border/60 bg-card/95 backdrop-blur-2xl shadow-2xl p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="flex items-center justify-between pb-3 border-b border-border/40">
                 <div className="flex items-center gap-2 font-bold text-sm text-foreground">
