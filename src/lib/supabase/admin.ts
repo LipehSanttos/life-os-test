@@ -35,7 +35,7 @@ export function getSupabaseConfigStatus(): string {
   if (!hasAuth) missing.push("AUTH_SECRET");
 
   if (missing.length > 0) {
-    return `Variáveis não encontradas na Cloudflare: ${missing.join(", ")}`;
+    return `Variáveis ausentes no ambiente (.env / Cloudflare): ${missing.join(", ")}`;
   }
   return "Todas as variáveis foram detectadas.";
 }
