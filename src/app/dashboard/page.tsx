@@ -14,7 +14,6 @@ import {
 import { DailyGreeting } from "@/components/dashboard/DailyGreeting";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { TaskItem } from "@/components/tasks/TaskItem";
-import { QuickAddTask } from "@/components/tasks/QuickAddTask";
 import { TaskModal } from "@/components/tasks/TaskModal";
 import {
   TaskData,
@@ -114,11 +113,6 @@ export default function DashboardPage() {
         <StatCard label="Projetos" value={stats.activeProjectsCount} icon={FolderKanban} color="#10b981" href="/projects" />
         <StatCard label="Cursos" value={stats.inProgressCoursesCount} icon={GraduationCap} color="#e11d48" href="/studies" />
         <StatCard label="Contas" value={finances.length} icon={DollarSign} color="#14b8a6" href="/finance" />
-      </div>
-
-      {/* Quick Add Bar */}
-      <div>
-        <QuickAddTask onTaskCreated={loadData} placeholder="Nova tarefa rápida no Life OS... (digite ou use o microfone)" />
       </div>
 
       {/* Main 2-Column Content Grid */}
