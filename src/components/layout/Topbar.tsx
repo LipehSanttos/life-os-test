@@ -41,14 +41,42 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
         if (res && res.totalCount !== undefined) {
           setData(res);
 
-          // Notifica nativamente se tiver aniversário hoje
-          const todayBirthdays = (res.birthdays || []).filter((b: any) => b.isToday);
-          if (todayBirthdays.length > 0) {
-            todayBirthdays.forEach((b: any) => {
-              sendBrowserNotification(`Hoje é Aniversário!`, {
-                body: `Lembrete: ${b.title}`,
+          // Verifica se já notificou nesta sessão para evitar alertas repetidos ao navegar
+          const notifiedKey = `life_os_notified_${new Date().toISOString().slice(0, 10)}`;
+          const alreadyNotified = typeof window !== "undefined" && sessionStorage.getItem(notifiedKey);
+
+          if (!alreadyNotified) {
+            let notified = false;
+
+            // 1. Notifica se tiver aniversários hoje
+            const todayBirthdays = (res.birthdays || []).filter((b: any) => b.isToday);
+            if (todayBirthdays.length > 0) {
+              todayBirthdays.forEach((b: any) => {
+                sendBrowserNotification(`🎂 Hoje é Aniversário!`, {
+                  body: `Lembrete: ${b.title}`,
+                });
               });
+              notified = true;
+            }
+
+            // 2. Notifica se houver contas financeiras vencendo hoje ou atrasadas
+            const urgentBills = (res.bills || []).filter((bill: any) => {
+              if (!bill.dueDate) return false;
+              const due = new Date(bill.dueDate);
+              const now = new Date();
+              return due.toDateString() === now.toDateString() || due < now;
             });
+
+            if (urgentBills.length > 0) {
+              sendBrowserNotification(`💳 Conta Vencendo!`, {
+                body: `${urgentBills[0].title} ${urgentBills.length > 1 ? `(+${urgentBills.length - 1} contas)` : ""}`,
+              });
+              notified = true;
+            }
+
+            if (notified) {
+              sessionStorage.setItem(notifiedKey, "true");
+            }
           }
         }
       })

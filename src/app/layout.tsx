@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ToastProvider } from "@/components/providers/ToastProvider";
+import { ServiceWorkerRegister } from "@/components/providers/ServiceWorkerRegister";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default function RootLayout({
       </head>
       <body className={`${GeistSans.className} antialiased selection:bg-primary/20 selection:text-primary`}>
         <ThemeProvider defaultTheme="dark">
+          <ServiceWorkerRegister />
           <ToastProvider />
           <AppShell>{children}</AppShell>
         </ThemeProvider>
