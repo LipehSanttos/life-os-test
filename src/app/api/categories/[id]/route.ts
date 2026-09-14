@@ -53,12 +53,44 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!category) {
       return NextResponse.json({ error: "Categoria não encontrada." }, { status: 404 });
     }
-    if (category.isSystem) {
-      return NextResponse.json({ error: "Categorias padrão do sistema não podem ser excluídas." }, { status: 400 });
+
+    // 1. Registra a exclusão isolada para o usuário autenticado em ActivityLog
+    // Isso garante que a categoria desapareça para ele, mas continue existindo para os outros usuários
+    const existingExclusion = await prisma.activityLog.findFirst({
+      where: {
+        userId: user.id,
+        entityType: "CATEGORY_EXCLUSION",
+        entityId: id,
+      },
+    });
+
+    if (!existingExclusion) {
+      await prisma.activityLog.create({
+        data: {
+          entityType: "CATEGORY_EXCLUSION",
+          entityId: id,
+          action: "EXCLUDE",
+          title: category.name,
+          details: category.slug,
+          userId: user.id,
+        },
+      });
     }
 
-    await prisma.category.delete({ where: { id } });
-    return NextResponse.json({ success: true });
+    // 2. Desvincula com segurança as entidades pertencentes exclusivamente a este usuário
+    // Sem apagar as tarefas ou projetos em si, apenas removendo o vínculo com a categoria excluída
+    await Promise.all([
+      prisma.task.updateMany({ where: { userId: user.id, categoryId: id }, data: { categoryId: null } }),
+      prisma.project.updateMany({ where: { userId: user.id, categoryId: id }, data: { categoryId: null } }),
+      prisma.course.updateMany({ where: { userId: user.id, categoryId: id }, data: { categoryId: null } }),
+      prisma.book.updateMany({ where: { userId: user.id, categoryId: id }, data: { categoryId: null } }),
+      prisma.financialReminder.updateMany({ where: { userId: user.id, categoryId: id }, data: { categoryId: null } }),
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      message: `Categoria "${category.name}" excluída com sucesso para o seu perfil.`,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Erro ao excluir categoria." }, { status: 500 });
   }
