@@ -1,8 +1,9 @@
 -- ==============================================================================
--- LIFE OS - SCHEMA SQL COMPLETO PARA SUPABASE (POSTGRESQL)
+-- LIFE OS - SCHEMA SQL COMPLETO E UNIFICADO PARA SUPABASE (POSTGRESQL)
 -- ==============================================================================
 -- Copie e cole este script diretamente no SQL Editor do Supabase para criar
--- todas as 12 tabelas, relacionamentos, triggers de autenticação e categorias.
+-- todas as 12 tabelas, relacionamentos, índices, políticas de segurança RLS,
+-- gatilhos de sincronização de autenticação e categorias padrão do sistema.
 -- ==============================================================================
 
 -- 1. Criação das Tabelas
@@ -70,14 +71,17 @@ CREATE TABLE IF NOT EXISTS public."Course" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "institution" TEXT,
-    "totalModules" INTEGER NOT NULL DEFAULT 1,
-    "currentModule" INTEGER NOT NULL DEFAULT 0,
-    "progress" INTEGER NOT NULL DEFAULT 0,
+    "description" TEXT,
+    "color" TEXT DEFAULT '#8b5cf6',
+    "icon" TEXT DEFAULT 'GraduationCap',
     "status" TEXT NOT NULL DEFAULT 'IN_PROGRESS',
-    "startDate" TIMESTAMP(3),
-    "dueDate" TIMESTAMP(3),
+    "progress" INTEGER NOT NULL DEFAULT 0,
+    "currentModule" TEXT,
+    "totalModules" TEXT,
+    "schedule" TEXT,
+    "platformUrl" TEXT,
+    "certificateUrl" TEXT,
     "notes" TEXT,
-    "links" TEXT,
     "userId" TEXT,
     "categoryId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -91,12 +95,9 @@ CREATE TABLE IF NOT EXISTS public."Book" (
     "author" TEXT,
     "isbn" TEXT,
     "coverUrl" TEXT,
-    "totalPages" INTEGER NOT NULL DEFAULT 100,
+    "totalPages" INTEGER,
     "currentPage" INTEGER NOT NULL DEFAULT 0,
-    "progress" INTEGER NOT NULL DEFAULT 0,
-    "status" TEXT NOT NULL DEFAULT 'READING',
-    "startDate" TIMESTAMP(3),
-    "finishDate" TIMESTAMP(3),
+    "status" TEXT NOT NULL DEFAULT 'WANT_TO_READ',
     "rating" INTEGER,
     "notes" TEXT,
     "userId" TEXT,
@@ -130,30 +131,24 @@ CREATE TABLE IF NOT EXISTS public."FinancialReminder" (
 CREATE TABLE IF NOT EXISTS public."Task" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "description" TEXT,
+    "notes" TEXT,
+    "dueDate" TIMESTAMP(3),
+    "dueTime" TEXT,
+    "isAllDay" BOOLEAN NOT NULL DEFAULT false,
+    "status" TEXT NOT NULL DEFAULT 'INBOX',
     "priority" TEXT NOT NULL DEFAULT 'MEDIUM',
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "tags" TEXT,
+    "isRecurring" BOOLEAN NOT NULL DEFAULT false,
+    "recurrenceRule" TEXT,
+    "lastCompletedAt" TIMESTAMP(3),
+    "isBirthday" BOOLEAN NOT NULL DEFAULT false,
+    "birthdayPerson" TEXT,
     "userId" TEXT,
     "categoryId" TEXT,
     "projectId" TEXT,
     "courseId" TEXT,
     "bookId" TEXT,
     "financialReminderId" TEXT,
-    "startDate" TIMESTAMP(3),
-    "dueDate" TIMESTAMP(3),
-    "dueTime" TEXT,
-    "completedAt" TIMESTAMP(3),
-    "isRecurring" BOOLEAN NOT NULL DEFAULT false,
-    "recurrenceRule" TEXT,
-    "recurrenceInterval" INTEGER DEFAULT 1,
-    "tags" TEXT,
-    "notes" TEXT,
-    "attachments" TEXT,
-    "clientName" TEXT,
-    "clientValue" DOUBLE PRECISION,
-    "academicSubject" TEXT,
-    "isInbox" BOOLEAN NOT NULL DEFAULT false,
-    "sortOrder" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
@@ -177,6 +172,7 @@ CREATE TABLE IF NOT EXISTS public."ActivityLog" (
     "action" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "details" TEXT,
+    "userId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
 );
@@ -202,9 +198,13 @@ CREATE TABLE IF NOT EXISTS public."ChatMessage" (
     CONSTRAINT "ChatMessage_pkey" PRIMARY KEY ("id")
 );
 
--- 2. Índices Únicos
+-- 2. Restrições e Índices Únicos
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON public."User"("email");
 CREATE UNIQUE INDEX IF NOT EXISTS "Category_slug_key" ON public."Category"("slug");
+
+DO $$ BEGIN
+  ALTER TABLE public."User" ADD CONSTRAINT "User_role_check" CHECK ("role" IN ('USER', 'ADMIN'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- 3. Chaves Estrangeiras Seguras
 DO $$ BEGIN
@@ -268,6 +268,10 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
+  ALTER TABLE public."ActivityLog" ADD CONSTRAINT "ActivityLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES public."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
   ALTER TABLE public."ChatSession" ADD CONSTRAINT "ChatSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES public."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
@@ -275,7 +279,95 @@ DO $$ BEGIN
   ALTER TABLE public."ChatMessage" ADD CONSTRAINT "ChatMessage_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES public."ChatSession"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
--- 4. Trigger de Sincronização Automática com Supabase Auth (auth.users -> public.User)
+-- 4. Índices de Performance e Consulta
+CREATE INDEX IF NOT EXISTS "Task_userId_idx" ON public."Task"("userId");
+CREATE INDEX IF NOT EXISTS "Task_status_idx" ON public."Task"("status");
+CREATE INDEX IF NOT EXISTS "Task_dueDate_idx" ON public."Task"("dueDate");
+CREATE INDEX IF NOT EXISTS "Task_categoryId_idx" ON public."Task"("categoryId");
+
+CREATE INDEX IF NOT EXISTS "FinancialReminder_userId_idx" ON public."FinancialReminder"("userId");
+CREATE INDEX IF NOT EXISTS "FinancialReminder_dueDate_idx" ON public."FinancialReminder"("dueDate");
+CREATE INDEX IF NOT EXISTS "FinancialReminder_status_idx" ON public."FinancialReminder"("status");
+
+CREATE INDEX IF NOT EXISTS "Project_userId_idx" ON public."Project"("userId");
+CREATE INDEX IF NOT EXISTS "Course_userId_idx" ON public."Course"("userId");
+CREATE INDEX IF NOT EXISTS "Book_userId_idx" ON public."Book"("userId");
+
+CREATE INDEX IF NOT EXISTS "ChatSession_userId_idx" ON public."ChatSession"("userId");
+CREATE INDEX IF NOT EXISTS "ChatMessage_sessionId_idx" ON public."ChatMessage"("sessionId");
+CREATE INDEX IF NOT EXISTS "Subtask_taskId_idx" ON public."Subtask"("taskId");
+
+CREATE INDEX IF NOT EXISTS "ActivityLog_userId_idx" ON public."ActivityLog"("userId");
+CREATE INDEX IF NOT EXISTS "ActivityLog_entityId_idx" ON public."ActivityLog"("entityId");
+
+-- 5. Isolamento e Segurança (Row Level Security - RLS)
+ALTER TABLE public."User" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."UserSettings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Task" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Subtask" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Project" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Course" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Book" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."FinancialReminder" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."ChatSession" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."ChatMessage" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."ActivityLog" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public."Category" ENABLE ROW LEVEL SECURITY;
+
+-- Políticas de RLS para acesso autenticado (service_role sempre tem acesso total no backend)
+DO $$ BEGIN
+  CREATE POLICY "Category_select_authenticated" ON public."Category" FOR SELECT TO authenticated USING (true);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "User_select_own" ON public."User" FOR SELECT TO authenticated USING (id = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "UserSettings_select_own" ON public."UserSettings" FOR SELECT TO authenticated USING (id = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Task_select_own" ON public."Task" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Subtask_select_own" ON public."Subtask" FOR SELECT TO authenticated USING (
+    EXISTS (SELECT 1 FROM public."Task" t WHERE t.id = "taskId" AND t."userId" = auth.uid()::text)
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Project_select_own" ON public."Project" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Course_select_own" ON public."Course" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Book_select_own" ON public."Book" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "FinancialReminder_select_own" ON public."FinancialReminder" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "ChatSession_select_own" ON public."ChatSession" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "ChatMessage_select_own" ON public."ChatMessage" FOR SELECT TO authenticated USING (
+    EXISTS (SELECT 1 FROM public."ChatSession" s WHERE s.id = "sessionId" AND s."userId" = auth.uid()::text)
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "ActivityLog_select_own" ON public."ActivityLog" FOR SELECT TO authenticated USING ("userId" = auth.uid()::text);
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- 6. Trigger de Sincronização Automática com Supabase Auth (auth.users -> public.User)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -313,7 +405,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 5. Seed Inicial de Categorias Padrão
+-- 7. Seed Inicial de Categorias Padrão
 INSERT INTO public."Category" (id, name, slug, color, icon, "isSystem", "sortOrder", "updatedAt")
 VALUES
   ('cat_estudos', 'Estudos', 'estudos', '#8b5cf6', 'GraduationCap', true, 1, NOW()),
@@ -328,7 +420,8 @@ VALUES
   ('cat_compras', 'Compras', 'compras', '#64748b', 'ShoppingCart', true, 10, NOW()),
   ('cat_projetos', 'Projetos', 'projetos', '#6366f1', 'FolderKanban', true, 11, NOW()),
   ('cat_leitura', 'Leitura', 'leitura', '#84cc16', 'BookOpen', true, 12, NOW()),
-  ('cat_outros', 'Outros', 'outros', '#94a3b8', 'Folder', true, 13, NOW())
+  ('cat_aniversarios', 'Aniversários', 'aniversarios', '#f43f5e', 'Cake', true, 13, NOW()),
+  ('cat_outros', 'Outros', 'outros', '#94a3b8', 'Folder', true, 14, NOW())
 ON CONFLICT (slug) DO UPDATE SET
   name = EXCLUDED.name,
   color = EXCLUDED.color,
