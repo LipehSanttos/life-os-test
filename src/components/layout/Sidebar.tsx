@@ -165,14 +165,14 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
                 isActive
                   ? "bg-primary/10 text-primary font-bold glow-border-active"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/40",
-                item.highlight && !isActive && "text-indigo-400 hover:text-indigo-300 font-semibold"
+                item.highlight && !isActive && "text-red-400 hover:text-red-300 font-semibold"
               )}
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <Icon
                   className={cn(
                     "w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110",
-                    isActive ? "text-primary stroke-[2.5]" : item.highlight ? "text-indigo-400" : "text-muted-foreground"
+                    isActive ? "text-primary stroke-[2.5]" : item.highlight ? "text-red-400" : "text-muted-foreground"
                   )}
                 />
                 {!collapsed && <span className="truncate">{item.label}</span>}
@@ -195,22 +195,22 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
               className={cn(
                 "flex items-center justify-between px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all group",
                 pathname.startsWith("/admin")
-                  ? "bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30 shadow-xs"
-                  : "text-purple-400/90 hover:text-purple-300 hover:bg-purple-500/10"
+                  ? "bg-red-500/20 text-red-300 font-bold border border-red-500/30 shadow-xs"
+                  : "text-red-400/90 hover:text-red-300 hover:bg-red-500/10"
               )}
             >
               <div className="flex items-center gap-3 overflow-hidden">
                 <ShieldCheck
                   className={cn(
                     "w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110",
-                    pathname.startsWith("/admin") ? "text-purple-400 stroke-[2.5]" : "text-purple-400"
+                    pathname.startsWith("/admin") ? "text-red-400 stroke-[2.5]" : "text-red-400"
                   )}
                 />
                 {!collapsed && <span className="truncate">Gestão de Usuários</span>}
               </div>
 
               {!collapsed && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-500/20 text-red-400 border border-red-500/30">
                   Admin
                 </span>
               )}

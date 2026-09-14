@@ -147,7 +147,7 @@ export function ChatInterface() {
                   "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xs",
                   isUser
                     ? "bg-primary text-primary-foreground font-bold text-xs"
-                    : "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-indigo-500/20 shadow-md"
+                    : "bg-gradient-to-tr from-red-600 to-rose-600 text-white shadow-red-500/20 shadow-md"
                 )}
               >
                 {isUser ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
@@ -183,7 +183,7 @@ export function ChatInterface() {
 
         {loading && (
           <div className="flex gap-3 max-w-xl mr-auto animate-pulse">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center flex-shrink-0">
               <Bot className="w-5 h-5" />
             </div>
             <div className="p-4 sm:p-5 rounded-xl bg-muted/60 text-muted-foreground text-sm font-medium border border-border/60">

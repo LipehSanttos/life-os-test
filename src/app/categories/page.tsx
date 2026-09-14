@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [name, setName] = useState("");
-  const [color, setColor] = useState("#6366f1");
+  const [color, setColor] = useState("#ef4444");
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ export default function CategoriesPage() {
 
       toast.success("Categoria criada com sucesso!");
       setName("");
-      setColor("#6366f1");
+      setColor("#ef4444");
       setModalOpen(false);
       loadData();
     } catch (err: any) {
@@ -56,7 +56,7 @@ export default function CategoriesPage() {
       <div className="p-6 sm:p-8 rounded-xl border border-border/30 bg-card/60 backdrop-blur-xl glow-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider mb-2">
-            <Tags className="w-5 h-5 text-indigo-400" />
+            <Tags className="w-5 h-5 text-red-400" />
             <span>Estruturação</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">

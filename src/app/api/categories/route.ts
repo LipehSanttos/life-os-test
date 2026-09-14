@@ -5,8 +5,8 @@ import { prisma } from "@/lib/db";
 const DEFAULT_CATEGORIES = [
   { id: "cat_saude", name: "Saúde", slug: "saude", color: "#10b981", icon: "Heart", sortOrder: 1 },
   { id: "cat_faculdade", name: "Faculdade", slug: "faculdade", color: "#3b82f6", icon: "GraduationCap", sortOrder: 2 },
-  { id: "cat_trabalho", name: "Trabalho", slug: "trabalho", color: "#6366f1", icon: "Briefcase", sortOrder: 3 },
-  { id: "cat_freelance", name: "Freelance", slug: "freelance", color: "#8b5cf6", icon: "Laptop", sortOrder: 4 },
+  { id: "cat_trabalho", name: "Trabalho", slug: "trabalho", color: "#ef4444", icon: "Briefcase", sortOrder: 3 },
+  { id: "cat_freelance", name: "Freelance", slug: "freelance", color: "#e11d48", icon: "Laptop", sortOrder: 4 },
   { id: "cat_estudos", name: "Estudos", slug: "estudos", color: "#06b6d4", icon: "BookOpen", sortOrder: 5 },
   { id: "cat_compras", name: "Compras", slug: "compras", color: "#f59e0b", icon: "ShoppingCart", sortOrder: 6 },
   { id: "cat_casa", name: "Casa", slug: "casa", color: "#ec4899", icon: "Home", sortOrder: 7 },
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, color = "#6366f1", icon = "Folder", sortOrder = 0 } = body;
+    const { name, color = "#ef4444", icon = "Folder", sortOrder = 0 } = body;
 
     if (!name || name.trim() === "") {
       return NextResponse.json({ error: "O nome da categoria é obrigatório." }, { status: 400 });

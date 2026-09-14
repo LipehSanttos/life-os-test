@@ -112,7 +112,7 @@ export default function DashboardPage() {
           subtitle={stats.overdueCount > 0 ? "Atenção necessária" : "Tudo em dia"}
         />
         <StatCard label="Projetos" value={stats.activeProjectsCount} icon={FolderKanban} color="#10b981" href="/projects" />
-        <StatCard label="Cursos" value={stats.inProgressCoursesCount} icon={GraduationCap} color="#8b5cf6" href="/studies" />
+        <StatCard label="Cursos" value={stats.inProgressCoursesCount} icon={GraduationCap} color="#e11d48" href="/studies" />
         <StatCard label="Contas" value={finances.length} icon={DollarSign} color="#14b8a6" href="/finance" />
       </div>
 
@@ -279,7 +279,7 @@ export default function DashboardPage() {
           <div className="p-6 rounded-xl border border-border/30 bg-card/60 backdrop-blur-xl glow-border-hover space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-base text-foreground">
-                <GraduationCap className="w-5 h-5 text-indigo-400" />
+                <GraduationCap className="w-5 h-5 text-red-400" />
                 <span>Estudos & Cursos</span>
               </div>
               <Link href="/studies" className="text-xs font-semibold text-primary hover:underline">
@@ -295,11 +295,11 @@ export default function DashboardPage() {
                   <div key={c.id} className="p-3.5 rounded-lg bg-muted/30 border border-border/30 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-sm text-foreground">{c.name}</span>
-                      <span className="text-xs text-indigo-400 font-bold">{c.progress}%</span>
+                      <span className="text-xs text-red-400 font-bold">{c.progress}%</span>
                     </div>
                     <div className="w-full h-2 rounded-full bg-border/60 overflow-hidden">
                       <div
-                        className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                        className="h-full bg-red-500 rounded-full transition-all duration-500"
                         style={{ width: `${c.progress}%` }}
                       />
                     </div>

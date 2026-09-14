@@ -92,7 +92,7 @@ export default function StudiesPage() {
       <div className="p-6 sm:p-8 rounded-xl border border-border/30 bg-card/60 backdrop-blur-xl glow-border flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-primary font-bold text-sm uppercase tracking-wider mb-2">
-            <GraduationCap className="w-5 h-5 text-indigo-400" />
+            <GraduationCap className="w-5 h-5 text-red-400" />
             <span>Educação & Formação</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight">
@@ -123,10 +123,10 @@ export default function StudiesPage() {
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 rounded-lg bg-indigo-500/15 text-indigo-400">
+                  <div className="p-2.5 rounded-lg bg-red-500/15 text-red-400">
                     <Laptop className="w-5 h-5" />
                   </div>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/15 text-red-400 border border-red-500/25">
                     {course.progress}%
                   </span>
                 </div>
@@ -143,7 +143,7 @@ export default function StudiesPage() {
                 </div>
                 <div className="w-full h-2.5 rounded-full bg-border/70 overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                    className="h-full bg-red-500 rounded-full transition-all duration-500"
                     style={{ width: `${course.progress}%` }}
                   />
                 </div>
@@ -151,7 +151,7 @@ export default function StudiesPage() {
                 <button
                   onClick={() => handleAdvanceModule(course)}
                   disabled={course.currentModule >= course.totalModules}
-                  className="w-full py-2.5 rounded-lg bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-400 text-xs font-bold transition-all disabled:opacity-40"
+                  className="w-full py-2.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 text-xs font-bold transition-all disabled:opacity-40"
                 >
                   {course.currentModule >= course.totalModules ? "Curso Concluído" : "+ Concluir 1 Módulo"}
                 </button>

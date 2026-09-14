@@ -76,13 +76,13 @@ export function ActionConfirmationCard({ messageId, action, onActionHandled }: A
   }
 
   return (
-    <div className="my-3 p-5 rounded-3xl border-2 border-indigo-500/40 bg-card/95 shadow-xl text-card-foreground space-y-4 animate-fade-in backdrop-blur-md">
+    <div className="my-3 p-5 rounded-3xl border-2 border-red-500/40 bg-card/95 shadow-xl text-card-foreground space-y-4 animate-fade-in backdrop-blur-md">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-2xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">
+        <div className="p-2.5 rounded-2xl bg-red-500/15 text-red-400 border border-red-500/25">
           <Sparkles className="w-5 h-5 animate-pulse" />
         </div>
         <div>
-          <span className="text-xs uppercase tracking-wider font-bold text-indigo-400 block">
+          <span className="text-xs uppercase tracking-wider font-bold text-red-400 block">
             Confirmação de Ação
           </span>
           <h4 className="text-base font-bold text-foreground">{action.title}</h4>

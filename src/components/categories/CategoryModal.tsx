@@ -13,22 +13,22 @@ interface CategoryModalProps {
 
 export function CategoryModal({ isOpen, onClose, onSaved, categoryToEdit }: CategoryModalProps) {
   const [name, setName] = useState("");
-  const [color, setColor] = useState("#6366f1");
+  const [color, setColor] = useState("#ef4444");
   const [loading, setLoading] = useState(false);
 
   const predefinedColors = [
-    "#6366f1", "#8b5cf6", "#ec4899", "#ef4444", "#f97316",
-    "#f59e0b", "#10b981", "#14b8a6", "#0ea5e9", "#3b82f6",
+    "#ef4444", "#e11d48", "#f43f5e", "#f97316", "#f59e0b",
+    "#10b981", "#14b8a6", "#0ea5e9", "#3b82f6", "#64748b",
   ];
 
   useEffect(() => {
     if (isOpen) {
       if (categoryToEdit) {
         setName(categoryToEdit.name);
-        setColor(categoryToEdit.color || "#6366f1");
+        setColor(categoryToEdit.color || "#ef4444");
       } else {
         setName("");
-        setColor("#6366f1");
+        setColor("#ef4444");
       }
     }
   }, [isOpen, categoryToEdit]);

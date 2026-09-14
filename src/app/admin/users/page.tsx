@@ -197,7 +197,7 @@ export default function AdminUsersPage() {
       {/* Header Banner */}
       <div className="p-6 sm:p-8 rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm uppercase tracking-wider mb-2">
+          <div className="flex items-center gap-2 text-red-400 font-bold text-sm uppercase tracking-wider mb-2">
             <ShieldCheck className="w-5 h-5" />
             <span>Painel do Administrador</span>
           </div>
@@ -211,7 +211,7 @@ export default function AdminUsersPage() {
 
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 active:scale-95 transition-all self-start md:self-auto"
+          className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm shadow-lg shadow-red-600/30 active:scale-95 transition-all self-start md:self-auto"
         >
           <UserPlus className="w-5 h-5 stroke-[2.5]" />
           <span>Criar Novo Usuário</span>
@@ -221,7 +221,7 @@ export default function AdminUsersPage() {
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="p-6 rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex items-center gap-4">
-          <div className="p-3.5 rounded-2xl bg-indigo-500/15 text-indigo-400">
+          <div className="p-3.5 rounded-2xl bg-red-500/15 text-red-400">
             <Users className="w-6 h-6" />
           </div>
           <div>
@@ -233,14 +233,14 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="p-6 rounded-3xl border border-border/70 bg-card/80 backdrop-blur-xl shadow-xs flex items-center gap-4">
-          <div className="p-3.5 rounded-2xl bg-purple-500/15 text-purple-400">
+          <div className="p-3.5 rounded-2xl bg-rose-500/15 text-rose-400">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
               Administradores
             </span>
-            <span className="text-2xl sm:text-3xl font-black text-purple-400">{adminCount}</span>
+            <span className="text-2xl sm:text-3xl font-black text-rose-400">{adminCount}</span>
           </div>
         </div>
 
@@ -288,14 +288,14 @@ export default function AdminUsersPage() {
               return (
                 <div
                   key={u.id}
-                  className="p-5 rounded-2xl border border-border/70 bg-background/60 backdrop-blur-sm flex flex-col justify-between space-y-4 hover:border-indigo-500/40 transition-all shadow-xs"
+                  className="p-5 rounded-2xl border border-border/70 bg-background/60 backdrop-blur-sm flex flex-col justify-between space-y-4 hover:border-red-500/40 transition-all shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3.5">
                       <div
                         className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-base shadow-sm ${
                           isAdmin
-                            ? "bg-gradient-to-tr from-purple-600 to-indigo-500 text-white shadow-purple-500/20"
+                            ? "bg-gradient-to-tr from-red-600 to-rose-500 text-white shadow-red-500/20"
                             : "bg-blue-600/20 text-blue-400 border border-blue-500/30"
                         }`}
                       >
@@ -310,7 +310,7 @@ export default function AdminUsersPage() {
                         <div className="flex items-center gap-2">
                           <h3 className="font-black text-base text-foreground leading-tight">{u.name}</h3>
                           {isSelf && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-400 border border-indigo-500/25">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/25">
                               Você
                             </span>
                           )}
@@ -322,7 +322,7 @@ export default function AdminUsersPage() {
                     <span
                       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${
                         isAdmin
-                          ? "bg-purple-500/15 text-purple-400 border-purple-500/30"
+                          ? "bg-rose-500/15 text-rose-400 border-rose-500/30"
                           : "bg-blue-500/15 text-blue-400 border-blue-500/30"
                       }`}
                     >
@@ -337,7 +337,7 @@ export default function AdminUsersPage() {
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEditModal(u)}
-                        className="p-2 rounded-xl text-muted-foreground hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors"
+                        className="p-2 rounded-xl text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
                         title="Editar usuário e redefinir senha"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -366,7 +366,7 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-2xl">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-400">
+              <div className="p-3 rounded-2xl bg-red-500/15 text-red-400">
                 <UserPlus className="w-6 h-6" />
               </div>
               <div>
@@ -387,7 +387,7 @@ export default function AdminUsersPage() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="Ex: Carlos Silva"
-                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-red-500/40 font-semibold"
                     required
                     autoFocus
                   />
@@ -406,7 +406,7 @@ export default function AdminUsersPage() {
                       setNewEmail(sanitized);
                     }}
                     placeholder="Ex: carlos.silva ou carlos@empresa.com"
-                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-red-500/40 font-semibold"
                     required
                   />
                 </div>
@@ -424,7 +424,7 @@ export default function AdminUsersPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                    className="w-full pl-11 pr-11 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-red-500/40 font-semibold"
                     required
                   />
                   <button
@@ -470,13 +470,13 @@ export default function AdminUsersPage() {
                   <label
                     className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
                       newRole === "ADMIN"
-                        ? "bg-purple-500/10 border-purple-500/50 text-purple-400 ring-2 ring-purple-500/30"
+                        ? "bg-rose-500/10 border-rose-500/50 text-rose-400 ring-2 ring-rose-500/30"
                         : "bg-muted/40 border-border/60 text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 font-bold text-sm text-foreground">
-                        <ShieldCheck className="w-4 h-4 text-purple-400" />
+                        <ShieldCheck className="w-4 h-4 text-rose-400" />
                         <span>Administrador</span>
                       </div>
                       <input
@@ -485,7 +485,7 @@ export default function AdminUsersPage() {
                         value="ADMIN"
                         checked={newRole === "ADMIN"}
                         onChange={() => setNewRole("ADMIN")}
-                        className="w-4 h-4 text-purple-600"
+                        className="w-4 h-4 text-rose-600"
                       />
                     </div>
                     <span className="text-[11px] text-muted-foreground leading-tight">
@@ -506,7 +506,7 @@ export default function AdminUsersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-md shadow-indigo-600/30 transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-sm shadow-md shadow-red-600/30 transition-all"
                 >
                   {submitting ? "Cadastrando..." : "Cadastrar Usuário"}
                 </button>
@@ -521,7 +521,7 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
           <div className="w-full max-w-lg rounded-3xl border border-border/80 bg-card p-6 sm:p-8 space-y-6 shadow-2xl">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-400">
+              <div className="p-3 rounded-2xl bg-red-500/15 text-red-400">
                 <Edit2 className="w-6 h-6" />
               </div>
               <div>
@@ -539,7 +539,7 @@ export default function AdminUsersPage() {
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                  className="w-full px-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-red-500/40 font-semibold"
                   required
                 />
               </div>
@@ -553,7 +553,7 @@ export default function AdminUsersPage() {
                     const sanitized = e.target.value.replace(/[^a-zA-Z0-9.@]/g, "");
                     setEditEmail(sanitized);
                   }}
-                  className="w-full px-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                  className="w-full px-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-red-500/40 font-semibold"
                   required
                 />
               </div>
@@ -567,7 +567,7 @@ export default function AdminUsersPage() {
                   value={editPassword}
                   onChange={(e) => setEditPassword(e.target.value)}
                   placeholder="Digite a nova senha se desejar alterar"
-                  className="w-full px-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-indigo-500/40 font-semibold"
+                  className="w-full px-4 py-3 rounded-xl border border-border/70 bg-background text-foreground text-sm outline-none focus:ring-2 focus:ring-red-500/40 font-semibold"
                 />
               </div>
 
@@ -605,13 +605,13 @@ export default function AdminUsersPage() {
                   <label
                     className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col gap-1.5 ${
                       editRole === "ADMIN"
-                        ? "bg-purple-500/10 border-purple-500/50 text-purple-400 ring-2 ring-purple-500/30"
+                        ? "bg-rose-500/10 border-rose-500/50 text-rose-400 ring-2 ring-rose-500/30"
                         : "bg-muted/40 border-border/60 text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 font-bold text-sm text-foreground">
-                        <ShieldCheck className="w-4 h-4 text-purple-400" />
+                        <ShieldCheck className="w-4 h-4 text-rose-400" />
                         <span>Administrador</span>
                       </div>
                       <input
@@ -620,7 +620,7 @@ export default function AdminUsersPage() {
                         value="ADMIN"
                         checked={editRole === "ADMIN"}
                         onChange={() => setEditRole("ADMIN")}
-                        className="w-4 h-4 text-purple-600"
+                        className="w-4 h-4 text-rose-600"
                       />
                     </div>
                     <span className="text-[11px] text-muted-foreground leading-tight">
@@ -644,7 +644,7 @@ export default function AdminUsersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-md shadow-indigo-600/30 transition-all"
+                  className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-sm shadow-md shadow-red-600/30 transition-all"
                 >
                   {submitting ? "Salvando..." : "Salvar Alterações"}
                 </button>

@@ -221,7 +221,7 @@ export default function FinancePage() {
                           </span>
                         )}
                         {item.isRecurring && (
-                          <span className="px-2 py-0.5 rounded-md bg-indigo-500/15 text-[11px] font-bold text-indigo-400 flex items-center gap-1 border border-indigo-500/25">
+                          <span className="px-2 py-0.5 rounded-md bg-red-500/15 text-[11px] font-bold text-red-400 flex items-center gap-1 border border-red-500/25">
                             <RefreshCw className="w-3 h-3" />
                             Recorrente Mensal
                           </span>

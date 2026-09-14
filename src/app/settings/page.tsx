@@ -290,7 +290,7 @@ export default function SettingsPage() {
                   : "bg-card/70 border-border/60 hover:bg-muted text-muted-foreground"
               }`}
             >
-              <Moon className="w-5 h-5 mx-auto text-indigo-400 mb-1.5" />
+              <Moon className="w-5 h-5 mx-auto text-red-400 mb-1.5" />
               <span className="block text-xs font-bold">Escuro</span>
             </button>
 
@@ -324,10 +324,10 @@ export default function SettingsPage() {
 
         {/* AI Engine & Providers - Exclusivo para ADMIN */}
         {isAdmin ? (
-          <div className="p-6 rounded-3xl border-2 border-indigo-500/30 bg-card/85 backdrop-blur-xl shadow-md space-y-4">
+          <div className="p-6 rounded-3xl border-2 border-red-500/30 bg-card/85 backdrop-blur-xl shadow-md space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
+                <Sparkles className="w-4 h-4 text-red-400" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
                   Inteligência Artificial & Motores de Inferência
                 </h3>
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                       : "bg-card/70 border-border/60 hover:bg-muted"
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-1">
+                  <div className="flex items-center gap-2 text-red-400 font-bold text-xs mb-1">
                     <Sparkles className="w-4 h-4" />
                     <span>Google Gemini</span>
                   </div>
@@ -450,7 +450,7 @@ export default function SettingsPage() {
           </div>
         ) : (
           <div className="p-6 rounded-3xl border border-border/70 bg-card/60 backdrop-blur-xl shadow-xs flex items-start gap-3.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 flex-shrink-0 mt-0.5">
+            <div className="p-2 rounded-xl bg-red-500/10 text-red-400 flex-shrink-0 mt-0.5">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="space-y-1">

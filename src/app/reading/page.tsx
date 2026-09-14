@@ -351,7 +351,7 @@ export default function ReadingPage() {
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full p-6 flex flex-col items-center justify-center text-center bg-gradient-to-tr from-amber-500/20 via-primary/10 to-indigo-500/20">
+                      <div className="w-full h-full p-6 flex flex-col items-center justify-center text-center bg-gradient-to-tr from-amber-500/20 via-primary/10 to-red-500/20">
                         <BookOpen className="w-12 h-12 text-amber-500/60 mb-2" />
                         <span className="text-xs font-bold text-foreground/80 line-clamp-2">{book.title}</span>
                       </div>

@@ -228,7 +228,7 @@ export function TaskModal({
 
             <div>
               <label className="block text-sm font-bold text-foreground mb-1.5 flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-indigo-400" />
+                <Clock className="w-4 h-4 text-red-400" />
                 <span>Horário (Opcional)</span>
               </label>
               <input
@@ -262,7 +262,7 @@ export function TaskModal({
 
             <div>
               <label className="block text-sm font-bold text-foreground mb-1.5 flex items-center gap-1.5">
-                <GraduationCap className="w-4 h-4 text-indigo-400" />
+                <GraduationCap className="w-4 h-4 text-red-400" />
                 <span>Vincular ao Curso / Estudo</span>
               </label>
               <select
