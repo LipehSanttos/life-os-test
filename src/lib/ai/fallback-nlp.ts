@@ -40,10 +40,11 @@ export interface NLPResult {
 }
 
 export async function processFallbackNLP(prompt: string, userId?: string): Promise<NLPResult> {
-  const text = prompt.trim();
-  const lower = text.toLowerCase();
-  const now = new Date();
-  const userFilter = userId ? { userId } : {};
+  try {
+    const text = prompt.trim();
+    const lower = text.toLowerCase();
+    const now = new Date();
+    const userFilter = userId ? { userId } : {};
 
   // 1. CONSULTA: O que está atrasado ou vencido?
   if (lower.includes("atrasad") || lower.includes("vencid")) {
@@ -316,4 +317,26 @@ export async function processFallbackNLP(prompt: string, userId?: string): Promi
       },
     },
   };
+  } catch (err: any) {
+    // Caso ocorra qualquer exceção na consulta de dados, extrai os parâmetros diretamente do prompt
+    const sanitized = extractCleanTaskTitleAndDescription(prompt);
+    return {
+      reply: `Entendido: **"${sanitized.cleanTitle}"**.\n\nConfirme os detalhes no cartão abaixo para registrá-la:`,
+      action: {
+        type: "CREATE_TASK",
+        title: sanitized.cleanTitle,
+        summary: `${sanitized.cleanTitle} (Data: Amanhã | Categoria: ${sanitized.suggestedCategorySlug || "Geral"})`,
+        payload: {
+          title: sanitized.cleanTitle,
+          description: sanitized.description || null,
+          priority: sanitized.suggestedPriority || "MEDIUM",
+          dueDate: new Date(Date.now() + 86400000).toISOString(),
+          dueTime: sanitized.extractedTime || "09:00",
+          isRecurring: false,
+          clientName: sanitized.extractedClientName || null,
+          clientValue: sanitized.extractedAmount ?? null,
+        },
+      },
+    };
+  }
 }

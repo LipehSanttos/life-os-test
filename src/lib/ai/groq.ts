@@ -23,10 +23,16 @@ export async function processGroqChat(
   history: Message[] = [],
   userId?: string
 ): Promise<NLPResult> {
-  const user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
-  const userSettings = await prisma.userSettings.findUnique({
-    where: { id: "user_default" },
-  });
+  let user: any = null;
+  let userSettings: any = null;
+  try {
+    user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null;
+    userSettings = await prisma.userSettings.findUnique({
+      where: { id: "user_default" },
+    });
+  } catch {
+    // Continua mesmo se a consulta de configurações no banco falhar
+  }
 
   // Busca a chave da API na variável de ambiente GROQ_API_KEY (ou nas configurações do usuário)
   const apiKey = process.env.GROQ_API_KEY || userSettings?.groqApiKey;
@@ -43,19 +49,30 @@ export async function processGroqChat(
 
   const userFilter = userId ? { userId } : {};
 
-  const [categories, projects, courses, books, finances, tasks] = await Promise.all([
-    prisma.category.findMany({ select: { id: true, name: true, slug: true } }),
-    prisma.project.findMany({ where: { ...userFilter, status: { not: "ARCHIVED" } }, select: { id: true, name: true, progress: true, priority: true, dueDate: true } }),
-    prisma.course.findMany({ where: userFilter, select: { id: true, name: true, currentModule: true, totalModules: true, progress: true, institution: true } }),
-    prisma.book.findMany({ where: userFilter, select: { id: true, title: true, author: true, currentPage: true, totalPages: true, progress: true } }),
-    prisma.financialReminder.findMany({ where: userFilter, select: { id: true, title: true, amount: true, dueDate: true, status: true, isRecurring: true } }),
-    prisma.task.findMany({
-      where: { ...userFilter, status: { in: ["PENDING", "IN_PROGRESS"] } },
-      select: { id: true, title: true, priority: true, dueDate: true, dueTime: true, category: { select: { name: true } }, project: { select: { name: true } } },
-      orderBy: { dueDate: "asc" },
-      take: 30,
-    }),
-  ]);
+  let categories: any[] = [];
+  let projects: any[] = [];
+  let courses: any[] = [];
+  let books: any[] = [];
+  let finances: any[] = [];
+  let tasks: any[] = [];
+
+  try {
+    [categories, projects, courses, books, finances, tasks] = await Promise.all([
+      prisma.category.findMany({ select: { id: true, name: true, slug: true } }),
+      prisma.project.findMany({ where: { ...userFilter, status: { not: "ARCHIVED" } }, select: { id: true, name: true, progress: true, priority: true, dueDate: true } }),
+      prisma.course.findMany({ where: userFilter, select: { id: true, name: true, currentModule: true, totalModules: true, progress: true, institution: true } }),
+      prisma.book.findMany({ where: userFilter, select: { id: true, title: true, author: true, currentPage: true, totalPages: true, progress: true } }),
+      prisma.financialReminder.findMany({ where: userFilter, select: { id: true, title: true, amount: true, dueDate: true, status: true, isRecurring: true } }),
+      prisma.task.findMany({
+        where: { ...userFilter, status: { in: ["PENDING", "IN_PROGRESS"] } },
+        select: { id: true, title: true, priority: true, dueDate: true, dueTime: true, category: { select: { name: true } }, project: { select: { name: true } } },
+        orderBy: { dueDate: "asc" },
+        take: 30,
+      }),
+    ]);
+  } catch {
+    // Prossegue mesmo se a consulta contextual do banco falhar temporariamente
+  }
 
   const userName = user?.name || userSettings?.name || "Usuário";
 

@@ -29,10 +29,15 @@ export async function processUnifiedAIChat(
   history: Message[] = [],
   userId?: string
 ): Promise<NLPResult> {
-  const userSettings = userId
-    ? (await prisma.userSettings.findUnique({ where: { id: userId } })) ||
-      (await prisma.userSettings.findUnique({ where: { id: "user_default" } }))
-    : await prisma.userSettings.findUnique({ where: { id: "user_default" } });
+  let userSettings: any = null;
+  try {
+    userSettings = userId
+      ? (await prisma.userSettings.findUnique({ where: { id: userId } })) ||
+        (await prisma.userSettings.findUnique({ where: { id: "user_default" } }))
+      : await prisma.userSettings.findUnique({ where: { id: "user_default" } });
+  } catch (err) {
+    // Caso o banco esteja indisponível ou inacessível no momento, prossegue com as variáveis de ambiente
+  }
 
   const preferredProvider = userSettings?.aiProvider || "HYBRID";
   const geminiKey = process.env.GEMINI_API_KEY || userSettings?.geminiApiKey;
