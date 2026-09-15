@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { BookData, BookReadingSettings } from "@/types";
 import { toast } from "sonner";
+import { getEbookFromIndexedDB } from "@/lib/ebookStorage";
 
 // Importações dinâmicas para evitar incompatibilidades de SSR com Canvas e iframes
 const EpubReader = dynamic(() => import("@/components/reading/EpubReader"), {
@@ -55,6 +56,7 @@ export default function BookReaderPage() {
   const bookId = params?.id as string;
 
   const [book, setBook] = useState<BookData | null>(null);
+  const [resolvedUrl, setResolvedUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [showBars, setShowBars] = useState(true);
   const [showToc, setShowToc] = useState(false);
@@ -81,7 +83,16 @@ export default function BookReaderPage() {
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Carrega dados do livro
+  // Revoga URL de Blob temporário ao desmontar
+  useEffect(() => {
+    return () => {
+      if (resolvedUrl && resolvedUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(resolvedUrl);
+      }
+    };
+  }, [resolvedUrl]);
+
+  // 1. Carrega dados do livro e resolve URL (Supabase, local ou IndexedDB)
   useEffect(() => {
     async function loadBook() {
       if (!bookId) return;
@@ -95,6 +106,19 @@ export default function BookReaderPage() {
         }
         const data: BookData = await res.json();
         setBook(data);
+
+        // Resolve arquivo: se for IndexedDB local, extrai o Blob
+        if (data.fileUrl?.startsWith("idb:")) {
+          const blob = await getEbookFromIndexedDB(data.fileUrl);
+          if (blob) {
+            const blobUrl = URL.createObjectURL(blob);
+            setResolvedUrl(blobUrl);
+          } else {
+            toast.error("Arquivo local não encontrado neste navegador.");
+          }
+        } else if (data.fileUrl) {
+          setResolvedUrl(data.fileUrl);
+        }
 
         // Restaura localização salva (do banco ou do cache local)
         const localCached = localStorage.getItem(`reading_loc_${bookId}`);
@@ -527,7 +551,7 @@ export default function BookReaderPage() {
         <div className="w-full h-full">
           {book.fileFormat === "epub" ? (
             <EpubReader
-              url={book.fileUrl}
+              url={resolvedUrl || book.fileUrl}
               initialLocation={currentLocation}
               settings={settings}
               readerRef={readerRef}
@@ -551,7 +575,7 @@ export default function BookReaderPage() {
             />
           ) : (
             <PdfReader
-              url={book.fileUrl}
+              url={resolvedUrl || book.fileUrl}
               initialPage={
                 currentLocation && !isNaN(Number(currentLocation))
                   ? Number(currentLocation)

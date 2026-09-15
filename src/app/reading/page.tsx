@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { BookData } from "@/types";
 import { toast } from "sonner";
+import { saveEbookToIndexedDB } from "@/lib/ebookStorage";
 
 export default function ReadingPage() {
   const [books, setBooks] = useState<BookData[]>([]);
@@ -149,33 +150,59 @@ export default function ReadingPage() {
     }
   };
 
-  // Upload eBook file (.pdf or .epub)
+  // Upload eBook file (.pdf or .epub) com suporte a Supabase Storage e IndexedDB local
   const handleEbookUpload = async (file: File, isEdit: boolean = false) => {
     if (!file) return;
     const name = file.name.toLowerCase();
-    if (!name.endsWith(".pdf") && !name.endsWith(".epub")) {
+    let detectedFormat: "pdf" | "epub" | null = null;
+    if (name.endsWith(".pdf")) detectedFormat = "pdf";
+    else if (name.endsWith(".epub")) detectedFormat = "epub";
+
+    if (!detectedFormat) {
       toast.error("Formato inválido. Por favor envie um arquivo .pdf ou .epub.");
       return;
     }
 
     setUploadingEbook(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      let finalUrl = "";
+      let finalFormat: "pdf" | "epub" = detectedFormat;
+      let finalSize = file.size;
 
-      const res = await fetch("/api/reading/upload", {
-        method: "POST",
-        body: formData,
-      });
+      // 1. Tenta upload via API do servidor (Supabase Storage / local)
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Erro ao processar envio do eBook.");
+        const res = await fetch("/api/reading/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            finalUrl = data.url;
+            if (data.format) finalFormat = data.format;
+            if (data.size) finalSize = data.size;
+          }
+        }
+      } catch (uploadNetErr) {
+        console.warn("[upload] Falha no servidor, ativando fallback IndexedDB:", uploadNetErr);
       }
 
-      setFileUrl(data.url);
-      setFileFormat(data.format);
-      setFileSize(data.size);
+      // 2. Se o servidor falhou ou retornou 500, salva diretamente no IndexedDB do navegador
+      if (!finalUrl) {
+        const safeId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        finalUrl = await saveEbookToIndexedDB(safeId, file);
+        toast.success(`eBook "${file.name}" salvo no armazenamento local do navegador!`);
+      } else {
+        toast.success(`eBook "${file.name}" enviado com sucesso!`);
+      }
+
+      setFileUrl(finalUrl);
+      setFileFormat(finalFormat);
+      setFileSize(finalSize);
 
       // Preenche o título automaticamente se estiver em branco
       if (!isEdit && !title.trim()) {
@@ -185,9 +212,8 @@ export default function ReadingPage() {
           .trim();
         setTitle(cleanTitle);
       }
-
-      toast.success(`eBook "${file.name}" carregado com sucesso!`);
     } catch (err: any) {
+      console.error("Erro no processamento do eBook:", err);
       toast.error(err.message || "Erro no upload do arquivo.");
     } finally {
       setUploadingEbook(false);
