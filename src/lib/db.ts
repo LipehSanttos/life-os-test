@@ -24,16 +24,25 @@ function applyWhereClause(query: any, where?: Record<string, any>): any {
     if (key === "OR" && Array.isArray(value)) {
       const orConditions = value
         .map((cond: Record<string, any>) => {
+          if (!cond || typeof cond !== "object") return null;
           const subKey = Object.keys(cond)[0];
+          if (!subKey) return null;
           const subVal = cond[subKey];
+          if (subVal === undefined) return null;
+
           if (typeof subVal === "object" && subVal !== null) {
             if ("equals" in subVal) return `${subKey}.ilike.${subVal.equals}`;
             if ("contains" in subVal) return `${subKey}.ilike.%${subVal.contains}%`;
+            // Ignora objetos aninhados não suportados para evitar [object Object]
+            return null;
           }
           if (subKey === "email" || subKey === "name") {
             return `${subKey}.ilike.${subVal}`;
           }
-          return `${subKey}.eq.${subVal}`;
+          if (typeof subVal === "string" || typeof subVal === "number" || typeof subVal === "boolean") {
+            return `${subKey}.eq.${subVal}`;
+          }
+          return null;
         })
         .filter(Boolean)
         .join(",");
@@ -45,7 +54,9 @@ function applyWhereClause(query: any, where?: Record<string, any>): any {
 
     if (key === "NOT" && typeof value === "object" && value !== null) {
       for (const [notKey, notVal] of Object.entries(value)) {
-        query = query.neq(notKey, notVal);
+        if (typeof notVal === "string" || typeof notVal === "number" || typeof notVal === "boolean") {
+          query = query.neq(notKey, notVal);
+        }
       }
       continue;
     }

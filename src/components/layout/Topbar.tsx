@@ -36,7 +36,7 @@ export function Topbar({ onOpenSearch, onOpenMobileMenu }: TopbarProps) {
     requestBrowserNotificationPermission();
 
     fetch("/api/notifications")
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : null))
       .then((res) => {
         if (res && res.totalCount !== undefined) {
           setData(res);

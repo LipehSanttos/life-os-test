@@ -28,7 +28,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${GeistSans.className} antialiased selection:bg-primary/20 selection:text-primary`}>
+      <body suppressHydrationWarning className={`${GeistSans.className} antialiased selection:bg-primary/20 selection:text-primary`}>
         <ThemeProvider defaultTheme="dark">
           <ServiceWorkerRegister />
           <ToastProvider />

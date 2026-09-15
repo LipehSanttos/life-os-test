@@ -6,6 +6,7 @@ const STATIC_EXTENSIONS = new Set([
   ".woff", ".woff2", ".ttf", ".eot",
   ".css", ".js", ".map",
   ".json", ".txt", ".xml",
+  ".webmanifest",
 ]);
 
 function hasStaticExtension(pathname: string): boolean {
@@ -19,11 +20,14 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("iteam_auth_token")?.value;
 
-  // Permite acesso irrestrito a arquivos estáticos, healthcheck e rotas de autenticação
+  // Permite acesso irrestrito a arquivos estáticos, PWA, healthcheck e rotas de autenticação
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/health") ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/manifest.json" ||
+    pathname === "/sw.js" ||
     hasStaticExtension(pathname)
   ) {
     return NextResponse.next();

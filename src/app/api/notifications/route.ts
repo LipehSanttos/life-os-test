@@ -15,26 +15,37 @@ export async function GET(req: NextRequest) {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
 
-    // 1. Busca tarefas de aniversários
-    const birthdayTasks = await prisma.task.findMany({
-      where: {
-        ...userFilter,
-        OR: [
-          { category: { slug: "aniversarios" } },
-          { category: { name: { contains: "Aniversár" } } },
-          { title: { contains: "Aniversário" } },
-          { title: { contains: "Aniversario" } },
-          { title: { contains: "Niver" } },
-          { title: { contains: "niver" } },
-        ],
-      },
-      include: { category: true },
-    });
+    // Busca as tarefas do usuário autenticado incluindo dados da categoria
+    let userTasks: any[] = [];
+    try {
+      userTasks = await prisma.task.findMany({
+        where: { userId: user.id },
+        include: { category: true },
+      });
+    } catch (taskErr: any) {
+      console.warn("[api/notifications] Falha ao consultar tarefas:", taskErr?.message || taskErr);
+      userTasks = [];
+    }
 
+    // 1. Identifica e processa tarefas de aniversários em memória
     const upcomingBirthdays: any[] = [];
-
-    for (const bTask of birthdayTasks) {
+    for (const bTask of userTasks) {
       if (!bTask.dueDate) continue;
+
+      const catSlug = bTask.category?.slug?.toLowerCase() || "";
+      const catName = bTask.category?.name?.toLowerCase() || "";
+      const title = bTask.title?.toLowerCase() || "";
+
+      const isBirthday =
+        catSlug === "aniversarios" ||
+        catName.includes("aniversár") ||
+        catName.includes("aniversar") ||
+        title.includes("aniversár") ||
+        title.includes("aniversar") ||
+        title.includes("niver");
+
+      if (!isBirthday) continue;
+
       const due = new Date(bTask.dueDate);
       const birthMonth = due.getMonth();
       const birthDay = due.getDate();
@@ -42,7 +53,7 @@ export async function GET(req: NextRequest) {
       // Aniversário no ano corrente
       let targetDate = new Date(now.getFullYear(), birthMonth, birthDay, 0, 0, 0);
 
-      // Se já passou há mais de 1 dia no ano atual, calcula para o próximo ano
+      // Se já passou há mais de 1 dia no ano atual, projeta para o próximo ano
       const diffTime = targetDate.getTime() - todayStart.getTime();
       let diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
@@ -78,36 +89,48 @@ export async function GET(req: NextRequest) {
     // Ordena por proximidade (Hoje primeiro)
     upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
 
-    // 2. Busca tarefas atrasadas normais (excluindo aniversários)
-    const overdueTasks = await prisma.task.findMany({
-      where: {
-        ...userFilter,
-        dueDate: { lt: todayStart },
-        status: { in: ["PENDING", "IN_PROGRESS"] },
-        NOT: {
-          OR: [
-            { category: { slug: "aniversarios" } },
-            { title: { contains: "Aniversário" } },
-            { title: { contains: "Aniversario" } },
-          ],
-        },
-      },
-      include: { category: true },
-      orderBy: { dueDate: "asc" },
-      take: 10,
-    });
+    // 2. Filtra tarefas atrasadas normais (excluindo concluídas e aniversários)
+    const overdueTasks = userTasks
+      .filter((t) => {
+        if (t.status === "COMPLETED") return false;
+        if (!t.dueDate) return false;
+        const due = new Date(t.dueDate);
+        if (due >= todayStart) return false;
+
+        const catSlug = t.category?.slug?.toLowerCase() || "";
+        const catName = t.category?.name?.toLowerCase() || "";
+        const title = t.title?.toLowerCase() || "";
+
+        const isBirthday =
+          catSlug === "aniversarios" ||
+          catName.includes("aniversár") ||
+          catName.includes("aniversar") ||
+          title.includes("aniversár") ||
+          title.includes("aniversar") ||
+          title.includes("niver");
+
+        return !isBirthday;
+      })
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      .slice(0, 10);
 
     // 3. Busca contas com vencimento pendente próximo ou atrasado
     const nextThreeDays = new Date(todayStart.getTime() + 3 * 24 * 60 * 60 * 1000);
-    const bills = await prisma.financialReminder.findMany({
-      where: {
-        ...userFilter,
-        dueDate: { lte: nextThreeDays },
-        status: "PENDING",
-      },
-      orderBy: { dueDate: "asc" },
-      take: 5,
-    });
+    let bills: any[] = [];
+    try {
+      bills = await prisma.financialReminder.findMany({
+        where: {
+          userId: user.id,
+          dueDate: { lte: nextThreeDays },
+          status: "PENDING",
+        },
+        orderBy: { dueDate: "asc" },
+        take: 5,
+      });
+    } catch (finErr: any) {
+      console.warn("[api/notifications] Falha ao consultar lembretes financeiros:", finErr?.message || finErr);
+      bills = [];
+    }
 
     const totalCount = upcomingBirthdays.length + overdueTasks.length + bills.length;
 
@@ -118,7 +141,14 @@ export async function GET(req: NextRequest) {
       bills,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Erro ao buscar notificações." }, { status: 500 });
+    console.error("[api/notifications] Erro inesperado ao carregar notificações:", error?.message || error);
+    // Fallback defensivo que nunca retorna 500 para não quebrar a barra de navegação
+    return NextResponse.json({
+      totalCount: 0,
+      birthdays: [],
+      overdueTasks: [],
+      bills: [],
+    });
   }
 }
 
