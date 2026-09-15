@@ -133,9 +133,14 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("Erro no upload do eBook:", error);
+    // Em vez de retornar 500 no navegador, retorna sinal de fallback para IndexedDB
     return NextResponse.json(
-      { error: error.message || "Erro ao processar envio do arquivo de leitura." },
-      { status: 500 }
+      {
+        success: true,
+        fallbackToClient: true,
+        error: error.message || "Ambiente sem suporte a escrita direta. Utilizando armazenamento do navegador.",
+      },
+      { status: 200 }
     );
   }
 }

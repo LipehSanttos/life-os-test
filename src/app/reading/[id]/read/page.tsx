@@ -17,10 +17,11 @@ import {
   Settings2,
   Check,
   RotateCcw,
+  UploadCloud,
 } from "lucide-react";
 import { BookData, BookReadingSettings } from "@/types";
 import { toast } from "sonner";
-import { getEbookFromIndexedDB } from "@/lib/ebookStorage";
+import { getEbookFromIndexedDB, saveEbookToIndexedDB } from "@/lib/ebookStorage";
 
 // Importações dinâmicas para evitar incompatibilidades de SSR com Canvas e iframes
 const EpubReader = dynamic(() => import("@/components/reading/EpubReader"), {
@@ -105,6 +106,17 @@ export default function BookReaderPage() {
           return;
         }
         const data: BookData = await res.json();
+
+        // Fallback para cache local se fileUrl não veio do backend
+        if (!data.fileUrl && typeof window !== "undefined") {
+          const localUrl = localStorage.getItem(`ebook_file_${bookId}`);
+          const localFormat = localStorage.getItem(`ebook_format_${bookId}`);
+          if (localUrl) {
+            data.fileUrl = localUrl;
+            if (localFormat) data.fileFormat = localFormat as any;
+          }
+        }
+
         setBook(data);
 
         // Resolve arquivo: se for IndexedDB local, extrai o Blob
@@ -139,6 +151,85 @@ export default function BookReaderPage() {
 
     loadBook();
   }, [bookId, router]);
+
+  const [attachingFile, setAttachingFile] = useState(false);
+  const directFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDirectAttach = async (file: File) => {
+    if (!file || !bookId) return;
+    const name = file.name.toLowerCase();
+    let detectedFormat: "pdf" | "epub" | null = null;
+    if (name.endsWith(".pdf")) detectedFormat = "pdf";
+    else if (name.endsWith(".epub")) detectedFormat = "epub";
+
+    if (!detectedFormat) {
+      toast.error("Por favor envie um arquivo .pdf ou .epub.");
+      return;
+    }
+
+    setAttachingFile(true);
+    try {
+      let finalUrl = "";
+      let finalFormat: "pdf" | "epub" = detectedFormat;
+      let finalSize = file.size;
+
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/reading/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            finalUrl = data.url;
+            if (data.format) finalFormat = data.format;
+            if (data.size) finalSize = data.size;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn("Upload falhou no servidor, usando IndexedDB local:", uploadErr);
+      }
+
+      if (!finalUrl) {
+        const safeId = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        finalUrl = await saveEbookToIndexedDB(safeId, file);
+      }
+
+      // Persiste no backend
+      await fetch(`/api/reading/${bookId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fileUrl: finalUrl,
+          fileFormat: finalFormat,
+          fileSize: finalSize,
+        }),
+      });
+
+      // Salva no cache local do navegador
+      localStorage.setItem(`ebook_file_${bookId}`, finalUrl);
+      localStorage.setItem(`ebook_format_${bookId}`, finalFormat);
+
+      // Resolve a URL para o visualizador
+      if (finalUrl.startsWith("idb:")) {
+        const blob = await getEbookFromIndexedDB(finalUrl);
+        if (blob) {
+          setResolvedUrl(URL.createObjectURL(blob));
+        }
+      } else {
+        setResolvedUrl(finalUrl);
+      }
+
+      setBook((prev) => (prev ? { ...prev, fileUrl: finalUrl, fileFormat: finalFormat, fileSize: finalSize } : null));
+      toast.success("eBook anexado com sucesso! Iniciando leitura...");
+    } catch (err: any) {
+      toast.error("Erro ao carregar arquivo de leitura.");
+    } finally {
+      setAttachingFile(false);
+    }
+  };
 
   // 2. Auto-save com debounce de 1.5s
   const syncProgressToBackend = useCallback(
@@ -256,18 +347,59 @@ export default function BookReaderPage() {
 
   if (!book.fileUrl) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-background space-y-4">
-        <BookOpen className="w-12 h-12 text-muted-foreground" />
-        <h2 className="text-lg font-bold text-foreground">Arquivo de eBook não encontrado</h2>
-        <p className="text-xs text-muted-foreground max-w-sm">
-          Este livro ainda não possui um arquivo PDF ou EPUB anexado.
-        </p>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center bg-background space-y-5">
+        <div className="p-4 rounded-3xl bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20">
+          <BookOpen className="w-10 h-10" />
+        </div>
+        <div className="max-w-md space-y-2">
+          <h2 className="text-xl font-black text-foreground">{book.title}</h2>
+          <p className="text-xs text-muted-foreground">
+            Este livro ainda não possui um arquivo digital (PDF ou EPUB) anexado para leitura na aplicação.
+          </p>
+        </div>
+
+        <div className="p-6 rounded-2xl border-2 border-dashed border-amber-500/40 bg-card/60 backdrop-blur-md max-w-md w-full space-y-4">
+          <input
+            ref={directFileInputRef}
+            type="file"
+            accept=".pdf,.epub"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleDirectAttach(f);
+            }}
+          />
+
+          <button
+            type="button"
+            disabled={attachingFile}
+            onClick={() => directFileInputRef.current?.click()}
+            className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-amber-500/25 active:scale-95 transition-all disabled:opacity-50"
+          >
+            {attachingFile ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Carregando arquivo...</span>
+              </>
+            ) : (
+              <>
+                <UploadCloud className="w-4 h-4 stroke-[2.5]" />
+                <span>Carregar Arquivo (PDF ou EPUB) Agora</span>
+              </>
+            )}
+          </button>
+
+          <p className="text-[11px] text-muted-foreground">
+            Formatos suportados: PDF (.pdf) e EPUB (.epub)
+          </p>
+        </div>
+
         <Link
           href="/reading"
-          className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs inline-flex items-center gap-2"
+          className="px-5 py-2.5 rounded-xl border border-border/70 hover:bg-muted text-muted-foreground font-semibold text-xs inline-flex items-center gap-2 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Voltar para a Estante
+          <span>Voltar para a Estante</span>
         </Link>
       </div>
     );

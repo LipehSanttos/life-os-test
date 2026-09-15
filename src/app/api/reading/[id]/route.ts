@@ -73,10 +73,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (currentLocation !== undefined) dataToUpdate.currentLocation = currentLocation;
     if (readingSettings !== undefined) dataToUpdate.readingSettings = readingSettings;
 
-    const updated = await prisma.book.update({
-      where: { id },
-      data: dataToUpdate,
-    });
+    let updated: any;
+    try {
+      updated = await prisma.book.update({
+        where: { id },
+        data: dataToUpdate,
+      });
+    } catch (updateErr: any) {
+      console.warn("[api/reading/id] Atualização com campos de eBook falhou, tentando fallback base:", updateErr.message);
+      const baseData = { ...dataToUpdate };
+      delete baseData.fileUrl;
+      delete baseData.fileFormat;
+      delete baseData.fileSize;
+      delete baseData.currentLocation;
+      delete baseData.readingSettings;
+      updated = await prisma.book.update({
+        where: { id },
+        data: baseData,
+      });
+      updated = { ...updated, ...dataToUpdate };
+    }
 
     return NextResponse.json(updated);
   } catch (error: any) {

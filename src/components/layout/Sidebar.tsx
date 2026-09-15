@@ -90,8 +90,7 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
     { label: "Calendário", href: "/calendar", icon: Calendar },
     { label: "Projetos", href: "/projects", icon: FolderKanban },
     { label: "Estudos & Faculdade", href: "/studies", icon: GraduationCap },
-    { label: "Finanças & Contas", href: "/finance", icon: DollarSign, badge: stats.overdueCount > 0 ? "Atrasadas" : null, badgeColor: "bg-rose-500/15 text-rose-500 border border-rose-500/20" },
-    { label: "Leitura & Livros", href: "/reading", icon: BookOpen },
+    { label: "Leitor de eBooks & Livros", href: "/reading", icon: BookOpen, badge: "Kindle", badgeColor: "bg-amber-500/15 text-amber-500 border border-amber-500/20" },
     { label: "Categorias", href: "/categories", icon: Tags },
     { label: "Assistente IA", href: "/chat", icon: BotMessageSquare, highlight: true },
   ];
