@@ -25,9 +25,12 @@ export default function TodayPage() {
       ]);
       if (todayRes.ok) setTasks(await todayRes.json());
       if (overdueRes.ok) setOverdueTasks(await overdueRes.json());
-      if (catsRes.ok) setCategories(await catsRes.json());
+      if (catsRes.ok) {
+        const catsData = await catsRes.json();
+        setCategories(Array.isArray(catsData) ? catsData : []);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Falha ao carregar tarefas e categorias de hoje:", e);
     }
   };
 
@@ -81,7 +84,7 @@ export default function TodayPage() {
         >
           Todas ({tasks.length})
         </button>
-        {categories.map((cat) => {
+        {(Array.isArray(categories) ? categories : []).map((cat) => {
           const count = tasks.filter((t) => t.categoryId === cat.id).length;
           return (
             <button

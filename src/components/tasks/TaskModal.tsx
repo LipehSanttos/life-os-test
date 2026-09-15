@@ -39,12 +39,12 @@ export function TaskModal({
   useEffect(() => {
     if (isOpen) {
       Promise.all([
-        fetch("/api/categories").then((r) => r.json()),
-        fetch("/api/projects").then((r) => r.json()),
-        fetch("/api/studies").then((r) => r.json()),
+        fetch("/api/categories").then((r) => (r.ok ? r.json() : [])).catch(() => []),
+        fetch("/api/projects").then((r) => (r.ok ? r.json() : [])).catch(() => []),
+        fetch("/api/studies").then((r) => (r.ok ? r.json() : [])).catch(() => []),
       ]).then(([cats, projs, studies]) => {
-        setCategories(cats || []);
-        setProjects(projs || []);
+        setCategories(Array.isArray(cats) ? cats : []);
+        setProjects(Array.isArray(projs) ? projs : []);
         setCourses(Array.isArray(studies) ? studies : (studies?.courses || []));
       });
 
@@ -185,7 +185,7 @@ export function TaskModal({
                 className="w-full px-3.5 py-2.5 rounded-lg border border-border/40 bg-background/80 input-glow text-foreground text-sm outline-none font-semibold"
               >
                 <option value="">Sem categoria</option>
-                {categories.map((cat) => (
+                {(Array.isArray(categories) ? categories : []).map((cat) => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
                   </option>

@@ -39,9 +39,12 @@ export default function ProjectsPage() {
           if (updated) setSelectedProject(updated);
         }
       }
-      if (catRes.ok) setCategories(await catRes.json());
+      if (catRes.ok) {
+        const catData = await catRes.json();
+        setCategories(Array.isArray(catData) ? catData : []);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Falha ao carregar dados do projeto:", e);
     }
   };
 
@@ -299,7 +302,7 @@ export default function ProjectsPage() {
                     className="w-full px-3.5 py-2.5 rounded-lg border border-border/40 bg-background/80 text-foreground text-sm outline-none input-glow font-semibold"
                   >
                     <option value="">Sem categoria</option>
-                    {categories.map((c) => (
+                    {(Array.isArray(categories) ? categories : []).map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
                       </option>

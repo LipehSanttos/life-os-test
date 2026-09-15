@@ -22,7 +22,10 @@ export function ProjectModal({ isOpen, onClose, onProjectSaved, projectToEdit }:
 
   useEffect(() => {
     if (isOpen) {
-      fetch("/api/categories").then((r) => r.json()).then((data) => setCategories(data || []));
+      fetch("/api/categories")
+        .then((r) => (r.ok ? r.json() : []))
+        .then((data) => setCategories(Array.isArray(data) ? data : []))
+        .catch(() => setCategories([]));
       if (projectToEdit) {
         setName(projectToEdit.name);
         setDescription(projectToEdit.description || "");

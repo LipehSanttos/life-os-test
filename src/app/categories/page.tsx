@@ -22,9 +22,15 @@ export default function CategoriesPage() {
   const loadData = async () => {
     try {
       const res = await fetch("/api/categories");
-      if (res.ok) setCategories(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(Array.isArray(data) ? data : []);
+      } else {
+        setCategories([]);
+      }
     } catch (e) {
       console.error("Falha ao carregar categorias:", e);
+      setCategories([]);
     }
   };
 
@@ -113,7 +119,7 @@ export default function CategoriesPage() {
 
       {/* Categories Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {categories.length === 0 ? (
+        {!Array.isArray(categories) || categories.length === 0 ? (
           <div className="col-span-full p-12 text-center rounded-2xl border border-border/40 bg-card/40 backdrop-blur-xl">
             <Tags className="w-12 h-12 mx-auto text-muted-foreground/40 mb-3" />
             <h3 className="text-base font-bold text-foreground">Nenhuma categoria ativa</h3>

@@ -22,13 +22,41 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
     }
 
-    let categories = await prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-    });
+    let categories: any[] = [];
+    try {
+      categories = await prisma.category.findMany({
+        orderBy: { sortOrder: "asc" },
+      });
+    } catch (dbErr: any) {
+      console.warn("[api/categories] Falha ao consultar tabela Category no banco:", dbErr?.message || dbErr);
+    }
 
-    // Se a categoria de aniversários ou categorias padrão não existirem, provisiona automaticamente
+    // Se a tabela estiver vazia, provisiona as categorias padrão no banco ou em memória
+    if (!categories || categories.length === 0) {
+      try {
+        await prisma.category.createMany({
+          data: DEFAULT_CATEGORIES.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            color: c.color,
+            icon: c.icon,
+            sortOrder: c.sortOrder,
+            isSystem: true,
+          })),
+        });
+        categories = await prisma.category.findMany({
+          orderBy: { sortOrder: "asc" },
+        });
+      } catch (seedErr: any) {
+        console.warn("[api/categories] Falha ao provisionar categorias padrão:", seedErr?.message || seedErr);
+        categories = DEFAULT_CATEGORIES.map((c) => ({ ...c, isSystem: true }));
+      }
+    }
+
+    // Se a categoria de aniversários ainda não existir, provisiona automaticamente
     const hasAniversarios = categories.some(
-      (c) => c.slug === "aniversarios" || c.name.toLowerCase().includes("aniversár")
+      (c: any) => c.slug === "aniversarios" || (c.name && c.name.toLowerCase().includes("aniversár"))
     );
 
     if (!hasAniversarios) {
@@ -41,43 +69,54 @@ export async function GET(req: NextRequest) {
             color: "#f43f5e",
             icon: "Cake",
             sortOrder: 9,
+            isSystem: true,
           },
         });
         categories = await prisma.category.findMany({
           orderBy: { sortOrder: "asc" },
         });
-      } catch {
-        // Ignora caso já tenha sido criado em concorrência
+      } catch (aniErr: any) {
+        console.warn("[api/categories] Falha ao criar categoria de aniversários:", aniErr?.message || aniErr);
       }
     }
 
     // Busca as exclusões de categoria específicas deste usuário para garantir isolamento
-    const exclusions = await prisma.activityLog.findMany({
-      where: {
-        userId: user.id,
-        entityType: "CATEGORY_EXCLUSION",
-        action: "EXCLUDE",
-      },
-    });
+    let exclusions: any[] = [];
+    try {
+      exclusions = await prisma.activityLog.findMany({
+        where: {
+          userId: user.id,
+          entityType: "CATEGORY_EXCLUSION",
+          action: "EXCLUDE",
+        },
+      });
+    } catch (excErr: any) {
+      // Falha graciosa caso a coluna userId ou a tabela ActivityLog ainda não esteja disponível
+      console.warn("[api/categories] Consulta de exclusões ignorada por indisponibilidade:", excErr?.message || excErr);
+      exclusions = [];
+    }
 
     const excludedIds = new Set(exclusions.map((e: any) => e.entityId));
     const excludedSlugs = new Set(exclusions.map((e: any) => e.details).filter(Boolean));
 
     // Filtra as categorias excluídas apenas para o usuário atual
-    const userCategories = categories.filter(
+    const userCategories = (categories || []).filter(
       (c: any) => !excludedIds.has(c.id) && !excludedSlugs.has(c.slug)
     );
 
     // Contabiliza as tarefas do próprio usuário vinculadas a cada categoria
-    const userTasks = await prisma.task.findMany({
-      where: { userId: user.id },
-      select: { id: true, categoryId: true },
-    });
     const taskCountMap: Record<string, number> = {};
-    for (const t of userTasks) {
-      if (t.categoryId) {
-        taskCountMap[t.categoryId] = (taskCountMap[t.categoryId] || 0) + 1;
+    try {
+      const userTasks = await prisma.task.findMany({
+        where: { userId: user.id },
+      });
+      for (const t of userTasks || []) {
+        if (t.categoryId) {
+          taskCountMap[t.categoryId] = (taskCountMap[t.categoryId] || 0) + 1;
+        }
       }
+    } catch (taskErr: any) {
+      console.warn("[api/categories] Falha ao contabilizar tarefas:", taskErr?.message || taskErr);
     }
 
     const categoriesWithCount = userCategories.map((cat: any) => ({
@@ -88,8 +127,16 @@ export async function GET(req: NextRequest) {
     }));
 
     return NextResponse.json(categoriesWithCount);
-  } catch {
-    return NextResponse.json({ error: "Erro ao buscar categorias." }, { status: 500 });
+  } catch (error: any) {
+    console.error("[api/categories] Erro inesperado ao buscar categorias:", error?.message || error);
+    // Fallback defensivo: retorna as categorias padrão em formato de array para impedir travamento da interface
+    return NextResponse.json(
+      DEFAULT_CATEGORIES.map((cat) => ({
+        ...cat,
+        isSystem: true,
+        _count: { tasks: 0 },
+      }))
+    );
   }
 }
 
@@ -116,13 +163,17 @@ export async function POST(req: NextRequest) {
       .replace(/(^-|-$)/g, "");
 
     // Se o usuário havia excluído anteriormente uma categoria com este slug, remove o registro de exclusão
-    await prisma.activityLog.deleteMany({
-      where: {
-        userId: user.id,
-        entityType: "CATEGORY_EXCLUSION",
-        details: slug,
-      },
-    });
+    try {
+      await prisma.activityLog.deleteMany({
+        where: {
+          userId: user.id,
+          entityType: "CATEGORY_EXCLUSION",
+          details: slug,
+        },
+      });
+    } catch (delExcErr: any) {
+      console.warn("[api/categories] Falha ao limpar exclusão anterior:", delExcErr?.message || delExcErr);
+    }
 
     const category = await prisma.category.create({
       data: {
@@ -135,7 +186,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(category, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Erro ao criar categoria." }, { status: 500 });
+  } catch (error: any) {
+    console.error("[api/categories] Erro ao criar categoria:", error?.message || error);
+    return NextResponse.json({ error: error?.message || "Erro ao criar categoria." }, { status: 500 });
   }
 }

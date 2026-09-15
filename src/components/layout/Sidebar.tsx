@@ -48,7 +48,10 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
           fetch("/api/tasks?isInbox=true&status=PENDING"),
           fetch("/api/auth/me"),
         ]);
-        if (catsRes.ok) setCategories(await catsRes.json());
+        if (catsRes.ok) {
+          const catsData = await catsRes.json();
+          setCategories(Array.isArray(catsData) ? catsData : []);
+        }
         if (statsRes.ok) {
           const st = await statsRes.json();
           setStats((prev: any) => ({ ...prev, ...st }));
@@ -219,7 +222,7 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
         )}
 
         {/* Categories Section */}
-        {!collapsed && categories.length > 0 && (
+        {!collapsed && Array.isArray(categories) && categories.length > 0 && (
           <div className="pt-4 pb-2">
             <div className="flex items-center justify-between px-3 mb-2">
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
@@ -230,7 +233,7 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
               </Link>
             </div>
             <div className="space-y-0.5">
-              {categories.slice(0, 7).map((cat) => (
+              {(Array.isArray(categories) ? categories : []).slice(0, 7).map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/today?categoryId=${cat.id}`}

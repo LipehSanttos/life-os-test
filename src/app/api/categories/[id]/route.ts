@@ -56,25 +56,29 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     // 1. Registra a exclusão isolada para o usuário autenticado em ActivityLog
     // Isso garante que a categoria desapareça para ele, mas continue existindo para os outros usuários
-    const existingExclusion = await prisma.activityLog.findFirst({
-      where: {
-        userId: user.id,
-        entityType: "CATEGORY_EXCLUSION",
-        entityId: id,
-      },
-    });
-
-    if (!existingExclusion) {
-      await prisma.activityLog.create({
-        data: {
+    try {
+      const existingExclusion = await prisma.activityLog.findFirst({
+        where: {
+          userId: user.id,
           entityType: "CATEGORY_EXCLUSION",
           entityId: id,
-          action: "EXCLUDE",
-          title: category.name,
-          details: category.slug,
-          userId: user.id,
         },
       });
+
+      if (!existingExclusion) {
+        await prisma.activityLog.create({
+          data: {
+            entityType: "CATEGORY_EXCLUSION",
+            entityId: id,
+            action: "EXCLUDE",
+            title: category.name,
+            details: category.slug,
+            userId: user.id,
+          },
+        });
+      }
+    } catch (actErr: any) {
+      console.warn("[api/categories/id] Falha ao registrar exclusão em ActivityLog:", actErr?.message || actErr);
     }
 
     // 2. Desvincula com segurança as entidades pertencentes exclusivamente a este usuário
