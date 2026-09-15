@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { Plus } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { TaskModal } from "@/components/tasks/TaskModal";
@@ -9,6 +10,7 @@ import { TaskData } from "@/types";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isReader = pathname?.endsWith("/read");
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<TaskData | null>(null);
@@ -81,6 +83,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Botão Flutuante (FAB) Mobile: Nova Tarefa */}
+      {!isReader && (
+        <button
+          onClick={() => {
+            setTaskToEdit(null);
+            setTaskModalOpen(true);
+          }}
+          className="fixed bottom-6 right-6 z-40 md:hidden flex items-center gap-2 px-4 py-3.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs sm:text-sm shadow-2xl shadow-primary/40 border border-white/20 active:scale-95 transition-all duration-200 group"
+          style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
+          aria-label="Criar nova tarefa"
+          title="Criar nova tarefa"
+        >
+          <Plus className="w-5 h-5 stroke-[2.5] group-hover:rotate-90 transition-transform duration-200" />
+          <span className="font-extrabold tracking-wide">Nova Tarefa</span>
+        </button>
+      )}
 
       <TaskModal
         isOpen={taskModalOpen}
