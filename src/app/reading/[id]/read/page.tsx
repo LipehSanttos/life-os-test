@@ -72,7 +72,7 @@ export default function BookReaderPage() {
   const [pageInfo, setPageInfo] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
 
-  // Configurações do Leitor (estilo Kindle)
+  // Configurações do Leitor Digital
   const [settings, setSettings] = useState<Required<BookReadingSettings>>(DEFAULT_SETTINGS);
 
   const readerRef = useRef<{
@@ -288,7 +288,7 @@ export default function BookReaderPage() {
     }
   };
 
-  // 4. Atalhos de Teclado (Estilo Kindle)
+  // 4. Atalhos de Teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignora se o foco estiver em algum input
@@ -407,7 +407,7 @@ export default function BookReaderPage() {
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col select-none overflow-hidden transition-colors duration-300 ${getContainerBg()}`}>
-      {/* ── TOPBAR RETRÁTIL ESTILO KINDLE ── */}
+      {/* ── TOPBAR RETRÁTIL DO LEITOR DIGITAL ── */}
       <header
         className={`absolute top-0 left-0 right-0 z-40 transition-transform duration-300 backdrop-blur-xl border-b px-4 py-3 flex items-center justify-between shadow-sm ${
           showBars ? "translate-y-0" : "-translate-y-full"

@@ -89,8 +89,7 @@ export function Sidebar({ onOpenTaskModal }: SidebarProps) {
     { label: "Inbox", href: "/inbox", icon: Inbox, badge: stats.inboxCount > 0 ? stats.inboxCount : null, badgeColor: "bg-blue-500/15 text-blue-500 border border-blue-500/20" },
     { label: "Calendário", href: "/calendar", icon: Calendar },
     { label: "Projetos", href: "/projects", icon: FolderKanban },
-    { label: "Estudos & Faculdade", href: "/studies", icon: GraduationCap },
-    { label: "Leitor de eBooks & Livros", href: "/reading", icon: BookOpen, badge: "Kindle", badgeColor: "bg-amber-500/15 text-amber-500 border border-amber-500/20" },
+    { label: "Leitor de eBooks & Livros", href: "/reading", icon: BookOpen, badge: "eBooks", badgeColor: "bg-amber-500/15 text-amber-500 border border-amber-500/20" },
     { label: "Categorias", href: "/categories", icon: Tags },
     { label: "Assistente IA", href: "/chat", icon: BotMessageSquare, highlight: true },
   ];

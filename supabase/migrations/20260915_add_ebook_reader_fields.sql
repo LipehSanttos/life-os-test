@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- LIFE OS - MIGRAÇÃO PARA LEITOR DE EBOOKS (PDF & EPUB)
--- Adiciona suporte a armazenamento de arquivos e estado de leitura (Kindle-style)
+-- Adiciona suporte a armazenamento de arquivos e estado de leitura digital
 -- ==============================================================================
 
 DO $$ BEGIN

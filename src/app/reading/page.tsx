@@ -514,7 +514,7 @@ export default function ReadingPage() {
         <div>
           <div className="flex items-center gap-2 text-amber-500 font-bold text-sm uppercase tracking-wider mb-2">
             <BookMarked className="w-5 h-5" />
-            <span>Biblioteca Digital & Leitor Kindle</span>
+            <span>Biblioteca Digital & Leitor de eBooks</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-foreground">
             Leitura & Livros
@@ -580,7 +580,7 @@ export default function ReadingPage() {
       </div>
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* ABA 1: LEITOR DE EBOOKS (KINDLE VIEW)                         */}
+      {/* ABA 1: LEITOR DE EBOOKS (VISUALIZADOR DIGITAL)                */}
       {/* ───────────────────────────────────────────────────────────── */}
       {activeTab === "ebooks" && (
         <div className="space-y-6">
@@ -625,7 +625,7 @@ export default function ReadingPage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-black text-foreground">Carregando eBook...</h3>
-                  <p className="text-xs text-muted-foreground">Configurando o leitor estilo Kindle e indexando páginas.</p>
+                  <p className="text-xs text-muted-foreground">Configurando o leitor digital e indexando páginas.</p>
                 </div>
               </div>
             ) : (
@@ -674,7 +674,7 @@ export default function ReadingPage() {
                 </div>
                 <h3 className="text-base font-black text-foreground">Nenhum eBook carregado ainda</h3>
                 <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
-                  Arraste seu arquivo PDF ou EPUB para o campo acima para iniciar sua leitura no navegador com marcação de página automática estilo Kindle.
+                  Arraste seu arquivo PDF ou EPUB para o campo acima para iniciar sua leitura no navegador com marcação de página automática.
                 </p>
               </div>
             ) : (
@@ -777,7 +777,7 @@ export default function ReadingPage() {
                           />
                         </div>
 
-                        {/* Botão de Leitura Direta Estilo Kindle */}
+                        {/* Botão de Leitura Direta do Livro */}
                         <Link
                           href={`/reading/${book.id}/read`}
                           className="w-full py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-amber-500/25 active:scale-95 transition-all"
@@ -906,7 +906,7 @@ export default function ReadingPage() {
                       </div>
                     </div>
 
-                    {/* Reading Progress & Kindle Actions */}
+                    {/* Progresso de Leitura & Ações */}
                     <div className="space-y-3 pt-2 border-t border-border/40">
                       <div className="flex items-center justify-between text-xs text-muted-foreground font-bold">
                         <span>
@@ -924,7 +924,7 @@ export default function ReadingPage() {
                         />
                       </div>
 
-                      {/* Kindle Reader Action Button */}
+                      {/* Botão de Leitura do Livro */}
                       {book.fileUrl ? (
                         <Link
                           href={`/reading/${book.id}/read`}
