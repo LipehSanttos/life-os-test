@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   BookOpen,
   Plus,
@@ -16,6 +17,7 @@ import {
   BookCopy,
   Link as LinkIcon,
   X,
+  FileText,
 } from "lucide-react";
 import { BookData } from "@/types";
 import { toast } from "sonner";
@@ -36,6 +38,12 @@ export default function ReadingPage() {
   const [totalPages, setTotalPages] = useState(250);
   const [currentPage, setCurrentPage] = useState(0);
 
+  // eBook file upload state
+  const [fileUrl, setFileUrl] = useState("");
+  const [fileFormat, setFileFormat] = useState<"pdf" | "epub" | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
+  const [uploadingEbook, setUploadingEbook] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [searchingIsbn, setSearchingIsbn] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -43,6 +51,8 @@ export default function ReadingPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+  const ebookInputRef = useRef<HTMLInputElement>(null);
+  const editEbookInputRef = useRef<HTMLInputElement>(null);
 
   const loadData = async () => {
     try {
@@ -139,6 +149,51 @@ export default function ReadingPage() {
     }
   };
 
+  // Upload eBook file (.pdf or .epub)
+  const handleEbookUpload = async (file: File, isEdit: boolean = false) => {
+    if (!file) return;
+    const name = file.name.toLowerCase();
+    if (!name.endsWith(".pdf") && !name.endsWith(".epub")) {
+      toast.error("Formato inválido. Por favor envie um arquivo .pdf ou .epub.");
+      return;
+    }
+
+    setUploadingEbook(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/reading/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao processar envio do eBook.");
+      }
+
+      setFileUrl(data.url);
+      setFileFormat(data.format);
+      setFileSize(data.size);
+
+      // Preenche o título automaticamente se estiver em branco
+      if (!isEdit && !title.trim()) {
+        const cleanTitle = file.name
+          .replace(/\.(pdf|epub)$/i, "")
+          .replace(/[_-]/g, " ")
+          .trim();
+        setTitle(cleanTitle);
+      }
+
+      toast.success(`eBook "${file.name}" carregado com sucesso!`);
+    } catch (err: any) {
+      toast.error(err.message || "Erro no upload do arquivo.");
+    } finally {
+      setUploadingEbook(false);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
@@ -157,6 +212,9 @@ export default function ReadingPage() {
           isbn: isbn.trim() || null,
           coverUrl: coverUrl.trim() || null,
           totalPages: Number(totalPages) || 100,
+          fileUrl: fileUrl.trim() || null,
+          fileFormat: fileFormat || null,
+          fileSize: fileSize || null,
         }),
       });
 
@@ -192,6 +250,9 @@ export default function ReadingPage() {
           currentPage: Number(currentPage),
           progress: nextProgress,
           status: nextProgress === 100 ? "COMPLETED" : "READING",
+          fileUrl: fileUrl.trim() || null,
+          fileFormat: fileFormat || null,
+          fileSize: fileSize || null,
         }),
       });
 
@@ -263,6 +324,9 @@ export default function ReadingPage() {
     setCoverTab("upload");
     setTotalPages(book.totalPages);
     setCurrentPage(book.currentPage);
+    setFileUrl(book.fileUrl || "");
+    setFileFormat(book.fileFormat || null);
+    setFileSize(book.fileSize || null);
     setEditModalOpen(true);
   };
 
@@ -275,6 +339,9 @@ export default function ReadingPage() {
     setCoverTab("upload");
     setTotalPages(250);
     setCurrentPage(0);
+    setFileUrl("");
+    setFileFormat(null);
+    setFileSize(null);
   };
 
   return (
@@ -357,6 +424,15 @@ export default function ReadingPage() {
                       </div>
                     )}
 
+                    {/* Format Badge (EPUB / PDF) */}
+                    {book.fileFormat && (
+                      <div className="absolute top-3 left-3">
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-lg bg-black/75 text-amber-300 border border-white/20 uppercase backdrop-blur-md shadow-xs">
+                          {book.fileFormat}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Progress Badge */}
                     <div className="absolute top-3 right-3">
                       <span
@@ -404,7 +480,7 @@ export default function ReadingPage() {
                   </div>
                 </div>
 
-                {/* Reading Progress */}
+                {/* Reading Progress & Kindle Actions */}
                 <div className="space-y-3 pt-2 border-t border-border/40">
                   <div className="flex items-center justify-between text-xs text-muted-foreground font-bold">
                     <span>
@@ -421,6 +497,26 @@ export default function ReadingPage() {
                       style={{ width: `${book.progress}%` }}
                     />
                   </div>
+
+                  {/* Kindle Reader Action Button */}
+                  {book.fileUrl ? (
+                    <Link
+                      href={`/reading/${book.id}/read`}
+                      className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm shadow-amber-500/25 active:scale-95 transition-all"
+                    >
+                      <BookOpen className="w-4 h-4 stroke-[2.5]" />
+                      <span>{book.progress > 0 ? "Continuar Leitura" : "Iniciar Leitura"}</span>
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(book)}
+                      className="w-full py-2 px-3 rounded-xl border border-dashed border-amber-500/40 hover:border-amber-500 bg-amber-500/5 hover:bg-amber-500/10 text-amber-500 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>Carregar eBook (PDF/EPUB)</span>
+                    </button>
+                  )}
 
                   {/* Quick Action Buttons & Manual Input */}
                   <div className="flex items-center gap-2 pt-1">
@@ -665,6 +761,66 @@ export default function ReadingPage() {
                 )}
               </div>
 
+              {/* eBook File Selector (PDF / EPUB) */}
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Arquivo do Livro Digital (PDF ou EPUB) - Opcional</span>
+                </label>
+
+                <input
+                  ref={ebookInputRef}
+                  type="file"
+                  accept=".pdf,.epub,application/pdf,application/epub+zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleEbookUpload(file, false);
+                  }}
+                />
+
+                <div
+                  onClick={() => ebookInputRef.current?.click()}
+                  className="p-4 rounded-2xl border-2 border-dashed border-border/80 hover:border-amber-500/60 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer flex flex-col items-center justify-center text-center space-y-1.5"
+                >
+                  <UploadCloud className="w-6 h-6 text-amber-500 animate-pulse" />
+                  <span className="text-xs font-bold text-foreground">
+                    {uploadingEbook
+                      ? "Enviando arquivo de leitura..."
+                      : fileUrl
+                      ? "Clique para substituir o arquivo digital"
+                      : "Clique para selecionar o arquivo PDF ou EPUB do computador"}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Formatos suportados: .pdf e .epub até 50MB
+                  </span>
+                </div>
+
+                {fileUrl && (
+                  <div className="p-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center gap-3 mt-2">
+                    <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500 font-bold uppercase text-[10px]">
+                      {fileFormat || "EBOOK"}
+                    </div>
+                    <div className="flex-1 text-xs text-muted-foreground truncate">
+                      <span className="font-bold text-foreground block">Arquivo de Leitura Pronto</span>
+                      <span className="text-[11px] truncate block max-w-xs">{fileUrl}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFileUrl("");
+                        setFileFormat(null);
+                        setFileSize(null);
+                      }}
+                      className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 transition-colors"
+                      title="Remover eBook"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40">
                 <button
                   type="button"
@@ -849,6 +1005,66 @@ export default function ReadingPage() {
                       onClick={() => setCoverUrl("")}
                       className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 transition-colors"
                       title="Remover capa"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* eBook File Selector (PDF / EPUB) in Edit Modal */}
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Arquivo do Livro Digital (PDF ou EPUB)</span>
+                </label>
+
+                <input
+                  ref={editEbookInputRef}
+                  type="file"
+                  accept=".pdf,.epub,application/pdf,application/epub+zip"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleEbookUpload(file, true);
+                  }}
+                />
+
+                <div
+                  onClick={() => editEbookInputRef.current?.click()}
+                  className="p-4 rounded-2xl border-2 border-dashed border-border/80 hover:border-amber-500/60 bg-muted/20 hover:bg-muted/40 transition-all cursor-pointer flex flex-col items-center justify-center text-center space-y-1.5"
+                >
+                  <UploadCloud className="w-6 h-6 text-amber-500 animate-pulse" />
+                  <span className="text-xs font-bold text-foreground">
+                    {uploadingEbook
+                      ? "Enviando arquivo de leitura..."
+                      : fileUrl
+                      ? "Clique para substituir o arquivo digital deste livro"
+                      : "Clique para anexar arquivo PDF ou EPUB"}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    Formatos suportados: .pdf e .epub até 50MB
+                  </span>
+                </div>
+
+                {fileUrl && (
+                  <div className="p-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 flex items-center gap-3 mt-2">
+                    <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500 font-bold uppercase text-[10px]">
+                      {fileFormat || "EBOOK"}
+                    </div>
+                    <div className="flex-1 text-xs text-muted-foreground truncate">
+                      <span className="font-bold text-foreground block">Arquivo de Leitura Pronto</span>
+                      <span className="text-[11px] truncate block max-w-xs">{fileUrl}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFileUrl("");
+                        setFileFormat(null);
+                        setFileSize(null);
+                      }}
+                      className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/15 transition-colors"
+                      title="Remover eBook"
                     >
                       <X className="w-4 h-4" />
                     </button>

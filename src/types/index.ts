@@ -104,6 +104,13 @@ export interface CourseData {
   updatedAt: string;
 }
 
+export interface BookReadingSettings {
+  theme?: "light" | "sepia" | "dark" | "black";
+  fontSize?: number;
+  fontFamily?: "serif" | "sans" | "mono";
+  lineHeight?: number;
+}
+
 export interface BookData {
   id: string;
   title: string;
@@ -121,6 +128,11 @@ export interface BookData {
   categoryId?: string | null;
   category?: CategoryData | null;
   tasks?: TaskData[];
+  fileUrl?: string | null;
+  fileFormat?: "pdf" | "epub" | null;
+  fileSize?: number | null;
+  currentLocation?: string | null;
+  readingSettings?: BookReadingSettings | null;
   createdAt: string;
   updatedAt: string;
 }

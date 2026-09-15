@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+
+    const { id } = await params;
+    const book = await prisma.book.findFirst({
+      where: { id, userId: user.id },
+      include: { category: true },
+    });
+
+    if (!book) {
+      return NextResponse.json({ error: "Livro não encontrado." }, { status: 404 });
+    }
+
+    return NextResponse.json(book);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || "Erro ao buscar livro." }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getCurrentUser();
@@ -9,7 +30,23 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { id } = await params;
     const body = await req.json();
-    const { title, author, isbn, coverUrl, totalPages, currentPage, progress, status, rating, notes } = body;
+    const {
+      title,
+      author,
+      isbn,
+      coverUrl,
+      totalPages,
+      currentPage,
+      progress,
+      status,
+      rating,
+      notes,
+      fileUrl,
+      fileFormat,
+      fileSize,
+      currentLocation,
+      readingSettings,
+    } = body;
 
     const existing = await prisma.book.findFirst({
       where: { id, userId: user.id },
@@ -30,6 +67,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (status !== undefined) dataToUpdate.status = status;
     if (rating !== undefined) dataToUpdate.rating = rating ? Number(rating) : null;
     if (notes !== undefined) dataToUpdate.notes = notes;
+    if (fileUrl !== undefined) dataToUpdate.fileUrl = fileUrl ? fileUrl.trim() : null;
+    if (fileFormat !== undefined) dataToUpdate.fileFormat = fileFormat;
+    if (fileSize !== undefined) dataToUpdate.fileSize = fileSize !== null ? Number(fileSize) : null;
+    if (currentLocation !== undefined) dataToUpdate.currentLocation = currentLocation;
+    if (readingSettings !== undefined) dataToUpdate.readingSettings = readingSettings;
 
     const updated = await prisma.book.update({
       where: { id },
